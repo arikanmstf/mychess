@@ -2,6 +2,7 @@ function myChess(elemid){
 	var _self = this;
 	this.elemid =elemid;
 	this.playing = "White";
+	this.downPlayer = "White";
 	var drag = {
 		element:null,
 		startX : 0,
@@ -54,7 +55,7 @@ function myChess(elemid){
 	}
 	this.putPiece =function(sq,type,color){
 		if(!Number.isInteger(sq)) sq = this.getRowId(sq);
-		this.sqs[sq].innerHTML = "<img draggable='true' src='./img/pcs/"+color+type+".png' class='board-pcs' pccolor="+color+" sqid="+sq+" />";
+		this.sqs[sq].innerHTML = "<img draggable='true' src='./img/pcs/"+color+type+".png' class='board-pcs' pccolor="+color+" sqid="+sq+" pctype="+type+" />";
 	}
 	this.removePiece =function(sq){
 		if(!Number.isInteger(sq)) sq = this.getRowId(sq);
@@ -84,7 +85,81 @@ function myChess(elemid){
 		return ( (factor * 8)+ (parseInt(foo[1])-1) );
 	}
 	this.isLegalMove = function(e){
-		return true;
+		var target = e.target,
+		type = target.getAttribute("pctype"),
+		sq =  makeNumber(target.getAttribute("sqid")),
+		color = target.getAttribute("pccolor"),
+		_new = (parseInt(e.clientY/50)*8) + (parseInt(e.clientX/50)),
+		possible = [],
+		result = false;
+		function isLegalPawnMove(){
+			
+			console.log(sq,_new)
+			var r= 
+			( (_self.downPlayer=="White" && color=="Black" ) || (_self.downPlayer=="Black" && color=="White") ) ? 
+				( ( _new == sq+8 || ((sq>=8 && sq<16 && _self.sqs[_new-8].innerHTML=="") ? (_new == sq+16):false )) && _new <64 && _self.sqs[_new].innerHTML=="" ) || ( (_new==sq+7 || _new==sq+9) && _new<64 && _self.sqs[_new].innerHTML!="") ||  isEnPassant(): 
+				( ( _new == sq-8 || ((sq>=48 && sq<56) ? (_new == sq-16  && _self.sqs[_new+8].innerHTML==""):false )) && _new <64 && _self.sqs[_new].innerHTML=="") || ( (_new==sq-7 || _new==sq-9) && _new<64 && _self.sqs[_new].innerHTML!="") || isEnPassant();
+			
+			return r;
+		}
+		function isLegalRookMove(){
+			var r =true;
+			console.log(sq,_new)
+			if( (sq - _new)% 8 ==0 ){
+				if(sq>_new){
+					for (var i=sq-8; i > _new; i-=8) {
+						if(_self.sqs[i].innerHTML!="") {
+							r=false;
+							break;
+						}
+					}
+				}
+				else if(sq<_new){
+					for (var i=sq+8; i < _new; i+=8) {
+						if(_self.sqs[i].innerHTML!="") {
+							r=false;
+							break;
+						}
+					}
+				}
+				
+			}
+			else if( (parseInt(sq/8)==parseInt(_new/8)) ){
+				if(sq>_new){
+					for (var i=sq-1; i > _new; i--) {
+						if(_self.sqs[i].innerHTML!="") {
+							r=false;
+							break;
+						}
+					};
+				}
+				else if(sq<_new){
+					for (var i=sq+1; i < _new; i++) {
+						if(_self.sqs[i].innerHTML!="") {
+							r=false;
+							break;
+						}
+					}
+				}
+			}
+			else if(isCastling()){
+				return true;
+			}
+			return r;
+			
+		}
+		function isEnPassant(){
+			return false;
+		}
+		function isCastling(){
+			return false;
+		}
+		switch (type){
+			case "Pawn" : result = isLegalPawnMove();break;
+			case "Rook" : result = isLegalRookMove();break;
+			default : return false;
+		}
+		return result;
 	}
 	this.moveCompleted = function(e){
 		
