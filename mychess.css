@@ -26,8 +26,8 @@ body{background-color: #000;}
 	background-color: #e1e877;
 }
 .board-main >.board-row > .board-sq.dark{
-	background-color: #247328;
+	background-color: #306b7d; /* #247328; */
 }
 .board-main >.board-row > .board-sq.dark:hover,.board-main >.board-row > .board-sq.dark.hover{
-	background-color: #97dc6b;
+	background-color: #48a0bb; /* #97dc6b; */
 }

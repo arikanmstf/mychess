@@ -18,12 +18,12 @@ function MyChess(elemid){
 		this.Color = opts.Color;//White,Black
 		this.Element = opts.Element; // HTML DOM Element
 		this.Type = null; //Pawn,Rook,Knight,Bishop,Queen,King
-		this.isLegalMove = function(){console.info("Called abstract function  : isLegalMove()");return false;}
+		MyChessPiece.prototype.isLegalMove  = this.isLegalMove = function(){console.info("Called abstract function  : isLegalMove()");return false;}
 	}
 	function MyChessPawn(){
 		MyChessPiece.apply(this,arguments);
 		this.Type = "Pawn";
-		this.isLegalMove = function (old,_new){
+		MyChessPawn.prototype.isLegalMove = this.isLegalMove = function (old,_new){
 			console.log(old,_new)
 			var color=this.Color,r= 
 			( (_self.downPlayer=="White" && color=="Black" ) || (_self.downPlayer=="Black" && color=="White") ) ? 
@@ -39,7 +39,7 @@ function MyChess(elemid){
 	function MyChessRook(){
 		MyChessPiece.apply(this,arguments);
 		this.Type = "Rook";
-		this.isLegalMove = function(old,_new){
+		MyChessRook.prototype.isLegalMove = this.isLegalMove = function(old,_new){
 			var r =true;
 			console.log(old,_new)
 			if( (old - _new)% 8 ==0 ){
@@ -95,7 +95,7 @@ function MyChess(elemid){
 	function MyChessKnight(){
 		MyChessPiece.apply(this,arguments);
 		this.Type = "Knight";
-		this.isLegalMove = function(old,_new){
+		MyChessKnight.prototype.isLegalMove = this.isLegalMove = function(old,_new){
 			var dif = (old-_new);
 			return ( (dif == 10) || (dif == -10) ||
 				(dif == 6) || (dif == -6) ||
@@ -106,14 +106,74 @@ function MyChess(elemid){
 	function MyChessBishop(){
 		MyChessPiece.apply(this,arguments);
 		this.Type = "Bishop";
+		MyChessBishop.prototype.isLegalMove = this.isLegalMove = function(old,_new){
+			var r = true;
+			console.log(old,_new)
+			if( (old - _new) % 9 ==0){
+				if(old>_new){
+					for (var i=old-9; i > _new; i-=9) {
+						if(_self.Pieces[i].Element.innerHTML!="") {
+							r=false;
+							break;
+						}
+					}
+				}
+				else if(old<_new){
+					for (var i=old+9; i < _new; i+=9) {
+						if(_self.Pieces[i].Element.innerHTML!="") {
+							r=false;
+							break;
+						}
+					}
+				}
+			}
+			else if( (old - _new) % 7 ==0){
+				if(old>_new){
+					for (var i=old-7; i > _new; i-=7) {
+						if(_self.Pieces[i].Element.innerHTML!="") {
+							r=false;
+							break;
+						}
+					}
+				}
+				else if(old<_new){
+					for (var i=old+7; i < _new; i+=7) {
+						if(_self.Pieces[i].Element.innerHTML!="") {
+							r=false;
+							break;
+						}
+					}
+				}
+			}else{
+				r = false;
+			}
+			return r;
+		}
 	}
 	function MyChessQueen(){
 		MyChessPiece.apply(this,arguments);
 		this.Type = "Queen";
+		MyChessQueen.prototype.isLegalMove = this.isLegalMove = function(old,_new){
+			console.log(old,_new);
+			return (
+					MyChessBishop.prototype.isLegalMove(old,_new) ||
+					MyChessRook.prototype.isLegalMove(old,_new)
+				);
+		}
 	}
 	function MyChessKing(){
 		MyChessPiece.apply(this,arguments);
 		this.Type = "King";
+		MyChessKing.prototype.isLegalMove = this.isLegalMove = function(old,_new){
+			console.log(old,_new)
+			var dif = old- _new ;
+			return (
+				(dif==1) || (dif==-1) ||
+				(dif==7) || (dif==-7) ||
+				(dif==8) || (dif==-8) ||
+				(dif==9) || (dif==-9)
+				)
+		}
 	}
 	
 	this.init = function(){
@@ -155,7 +215,7 @@ function MyChess(elemid){
 		this.putPiece(58,"Bishop","White");
 		this.putPiece(61,"Bishop","White");
 		this.putPiece(59,"Queen","White");
-		this.putPiece(60,"King","White");
+		this.putPiece(36,"King","White");
 		for (var i = 48; i < 56; i++) {
 			this.putPiece(i,"Pawn","White");
 		};
