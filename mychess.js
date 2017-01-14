@@ -28,33 +28,33 @@ function myChess(elemid){
 		};
 	}
 	this.startPosition = function () {
-		this.putPiece(0,"BlackRook");
-		this.putPiece(7,"BlackRook");
-		this.putPiece(1,"BlackKnight");
-		this.putPiece(6,"BlackKnight");
-		this.putPiece(2,"BlackBishop");
-		this.putPiece(5,"BlackBishop");
-		this.putPiece(3,"BlackQueen");
-		this.putPiece(4,"BlackKing");
+		this.putPiece(0,"Rook","Black");
+		this.putPiece(7,"Rook","Black");
+		this.putPiece(1,"Knight","Black");
+		this.putPiece(6,"Knight","Black");
+		this.putPiece(2,"Bishop","Black");
+		this.putPiece(5,"Bishop","Black");
+		this.putPiece(3,"Queen","Black");
+		this.putPiece(4,"King","Black");
 		for (var i = 8; i < 16; i++) {
-			this.putPiece(i,"BlackPawn");
+			this.putPiece(i,"Pawn","Black");
 		};
 
-		this.putPiece(56,"WhiteRook");
-		this.putPiece(63,"WhiteRook");
-		this.putPiece("a2","WhiteKnight");
-		this.putPiece(62,"WhiteKnight");
-		this.putPiece(58,"WhiteBishop");
-		this.putPiece(61,"WhiteBishop");
-		this.putPiece(59,"WhiteQueen");
-		this.putPiece(60,"WhiteKing");
+		this.putPiece(56,"Rook","White");
+		this.putPiece(63,"Rook","White");
+		this.putPiece("a2","Knight","White");
+		this.putPiece(62,"Knight","White");
+		this.putPiece(58,"Bishop","White");
+		this.putPiece(61,"Bishop","White");
+		this.putPiece(59,"Queen","White");
+		this.putPiece(60,"King","White");
 		for (var i = 48; i < 56; i++) {
-			this.putPiece(i,"WhitePawn");
+			this.putPiece(i,"Pawn","White");
 		};
 	}
-	this.putPiece =function(sq,name){
+	this.putPiece =function(sq,type,color){
 		if(!Number.isInteger(sq)) sq = this.getRowId(sq);
-		this.sqs[sq].innerHTML = "<img draggable='true' src='./img/pcs/"+name+".png' class='board-pcs drag' sqid="+sq+" />";
+		this.sqs[sq].innerHTML = "<img draggable='true' src='./img/pcs/"+color+type+".png' class='board-pcs' pccolor="+color+" sqid="+sq+" />";
 	}
 	this.removePiece =function(sq){
 		if(!Number.isInteger(sq)) sq = this.getRowId(sq);
@@ -93,11 +93,19 @@ function myChess(elemid){
 		_new = (parseInt(e.clientY/50)*8) + (parseInt(e.clientX/50))
 		if(old==_new){this.moveCanceled(target);return false;}
 		if(isNaN(old))return false;
+
+		var oldpc = (this.sqs[_new].getElementsByClassName("board-pcs")[0] );
+		if(oldpc != undefined && oldpc.getAttribute("pccolor") == this.playing){
+			this.moveCanceled(target);return false;
+		} 
+		if(target.getAttribute("pccolor")!=this.playing){this.moveCanceled(target);return false;}
 		target.style.left =0+"px";
 		target.style.top =0+"px";
 		target.style.zIndex =drag.oldZIndex;
 		target.setAttribute("sqid", _new);
 		this.movePiece(old,_new);
+		if(this.playing=="White")this.playing="Black";
+		else this.playing="White";
 	}
 	this.moveCanceled = function(target){
 		target.style.left =0+"px";
@@ -137,7 +145,7 @@ function myChess(elemid){
     	var target = e.target != null ? e.target : e.srcElement;
     	if(target==null)return false;
     	if ((e.button == 1 && window.event != null || 
-        e.button == 0) && target.className == 'board-pcs drag'){
+        e.button == 0) && target.className == 'board-pcs'){
         	drag.startX = e.clientX;
         	drag.startY = e.clientY;
         
