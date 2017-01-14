@@ -82,7 +82,6 @@ function myChess(elemid){
 			default : {console.error("Unexpected string : "+foo);if(isNaN(foo)) return false;}
 		}
 		return ( (factor * 8)+ (parseInt(foo[1])-1) );
-		
 	}
 	this.isLegalMove = function(e){
 		return true;
