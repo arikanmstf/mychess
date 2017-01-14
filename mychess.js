@@ -1,8 +1,9 @@
-function myChess(elemid){
+function MyChess(elemid){
 	var _self = this;
 	this.elemid =elemid;
 	this.playing = "White";
 	this.downPlayer = "White";
+	this.Pieces = [];
 	var drag = {
 		element:null,
 		startX : 0,
@@ -11,22 +12,128 @@ function myChess(elemid){
 		offsetY : 0,
 		oldZIndex : 0
 	}
+	function MyChessPiece(opts){
+		this.SquareID = opts.SquareID;// 0-63
+		this.SquareName = opts.SquareName; // a1-h8
+		this.Color = opts.Color;//White,Black
+		this.Element = opts.Element; // HTML DOM Element
+		this.Type = null; //Pawn,Rook,Knight,Bishop,Queen,King
+		this.isLegalMove = function(){console.info("Called abstract function  : isLegalMove()");return false;}
+	}
+	function MyChessPawn(){
+		MyChessPiece.apply(this,arguments);
+		this.Type = "Pawn";
+		this.isLegalMove = function (old,_new){
+			console.log(old,_new)
+			var color=this.Color,r= 
+			( (_self.downPlayer=="White" && color=="Black" ) || (_self.downPlayer=="Black" && color=="White") ) ? 
+				( ( _new == old+8 || ((old>=8 && old<16 && _self.Pieces[_new-8].Element.innerHTML=="") ? (_new == old+16):false )) && _new <64 && _self.Pieces[_new].Element.innerHTML=="" ) || ( (_new==old+7 || _new==old+9) && _new<64 && _self.Pieces[_new].Element.innerHTML!="") ||  isEnPassant(): 
+				( ( _new == old-8 || ((old>=48 && old<56) ? (_new == old-16  && _self.Pieces[_new+8].Element.innerHTML==""):false )) && _new <64 && _self.Pieces[_new].Element.innerHTML=="") || ( (_new==old-7 || _new==old-9) && _new<64 && _self.Pieces[_new].Element.innerHTML!="") || isEnPassant();
+			
+			return r;
+		}
+		function isEnPassant(){
+			return false;
+		}
+	}
+	function MyChessRook(){
+		MyChessPiece.apply(this,arguments);
+		this.Type = "Rook";
+		this.isLegalMove = function(old,_new){
+			var r =true;
+			console.log(old,_new)
+			if( (old - _new)% 8 ==0 ){
+				if(old>_new){
+					for (var i=old-8; i > _new; i-=8) {
+						if(_self.Pieces[i].Element.innerHTML!="") {
+							r=false;
+							break;
+						}
+					}
+				}
+				else if(old<_new){
+					for (var i=old+8; i < _new; i+=8) {
+						if(_self.Pieces[i].Element.innerHTML!="") {
+							r=false;
+							break;
+						}
+					}
+				}
+				
+			}
+			else if( (parseInt(old/8)==parseInt(_new/8)) ){
+				if(old>_new){
+					for (var i=old-1; i > _new; i--) {
+						if(_self.Pieces[i].Element.innerHTML!="") {
+							r=false;
+							break;
+						}
+					};
+				}
+				else if(old<_new){
+					for (var i=old+1; i < _new; i++) {
+						if(_self.Pieces[i].Element.innerHTML!="") {
+							r=false;
+							break;
+						}
+					}
+				}
+			}
+			else if(isCastling()){
+				r=true;
+			}
+			else {
+				r = false;
+			}
+			return r;
+			
+		}
+		function isCastling(){
+			return false;
+		}
+	}
+	function MyChessKnight(){
+		MyChessPiece.apply(this,arguments);
+		this.Type = "Knight";
+		this.isLegalMove = function(old,_new){
+			var dif = (old-_new);
+			return ( (dif == 10) || (dif == -10) ||
+				(dif == 6) || (dif == -6) ||
+				(dif == 15) || (dif == -15) || 
+				(dif == 17) || (dif == -17) ) ;
+		}
+	}
+	function MyChessBishop(){
+		MyChessPiece.apply(this,arguments);
+		this.Type = "Bishop";
+	}
+	function MyChessQueen(){
+		MyChessPiece.apply(this,arguments);
+		this.Type = "Queen";
+	}
+	function MyChessKing(){
+		MyChessPiece.apply(this,arguments);
+		this.Type = "King";
+	}
 	
 	this.init = function(){
 		this.mainboard  = document.getElementById(elemid),
 		rownumber = 0;
-		this.sqs = this.mainboard.getElementsByClassName("board-sq");
-		this.sqColors();
+		
+		sqColors();
 		this.startPosition();
 		this.mainboard.addEventListener ("mousedown", OnMouseDown,false);
-	}
-	this.sqColors = function () {
-		
-		for (var i = 0; i < 64; i++) {
-			if(i%8==0)rownumber++;
-			if ( ( rownumber%2==0 && i%2==0 ) ||( rownumber%2==1 && i%2==1 ) )  this.sqs[i].classList.add("dark");
-			else  this.sqs[i].classList	.add("light");
-		};
+		function sqColors() {
+			var sqs = _self.mainboard.getElementsByClassName("board-sq");
+			for (var i = 0; i < 64; i++) {
+					if(i%8==0)rownumber++;
+					if ( ( rownumber%2==0 && i%2==0 ) ||( rownumber%2==1 && i%2==1 ) )  sqs[i].classList.add("dark");
+					else  sqs[i].classList	.add("light");
+					_self.Pieces.push(
+						new MyChessPiece({Element:sqs[i]})
+					);
+				};
+		}
 	}
 	this.startPosition = function () {
 		this.putPiece(0,"Rook","Black");
@@ -43,7 +150,7 @@ function myChess(elemid){
 
 		this.putPiece(56,"Rook","White");
 		this.putPiece(63,"Rook","White");
-		this.putPiece("a2","Knight","White");
+		this.putPiece(57,"Knight","White");
 		this.putPiece(62,"Knight","White");
 		this.putPiece(58,"Bishop","White");
 		this.putPiece(61,"Bishop","White");
@@ -54,113 +161,37 @@ function myChess(elemid){
 		};
 	}
 	this.putPiece =function(sq,type,color){
-		if(!Number.isInteger(sq)) sq = this.getRowId(sq);
-		this.sqs[sq].innerHTML = "<img draggable='true' src='./img/pcs/"+color+type+".png' class='board-pcs' pccolor="+color+" sqid="+sq+" pctype="+type+" />";
+		if(!Number.isInteger(sq)) sq = getRowId(sq);
+		
+		var opts = {
+			SquareID:sq,
+			Color:color,
+			Element:this.Pieces[sq].Element
+		}
+		switch(type){
+			case 'Pawn' : this.Pieces[sq] = ( new MyChessPawn(opts)); break;
+			case 'Rook' : this.Pieces[sq] = ( new MyChessRook(opts)); break;
+			case 'Knight' : this.Pieces[sq] = ( new MyChessKnight(opts)); break;
+			case 'Bishop' : this.Pieces[sq] = ( new MyChessBishop(opts)); break;
+			case 'Queen' : this.Pieces[sq] = ( new MyChessQueen(opts)); break;
+			case 'King' : this.Pieces[sq] = ( new MyChessKing(opts)); break;
+		}
+		
+		this.Pieces[sq].Element.innerHTML = "<img draggable='true' src='./img/pcs/"+color+type+".png' class='board-pcs' pccolor="+color+" sqid="+sq+" pctype="+type+" />";
 	}
 	this.removePiece =function(sq){
-		if(!Number.isInteger(sq)) sq = this.getRowId(sq);
-		this.sqs[sq].innerHTML = "";
+		if(!Number.isInteger(sq)) sq = getRowId(sq);
+		this.Pieces[sq].Element.innerHTML = "";
 	}
 	this.movePiece = function(old,_new){
-		if(!Number.isInteger(old)) old = this.getRowId(old);
-		if(!Number.isInteger(_new)) _new = this.getRowId(_new);
-		this.sqs[_new].innerHTML =this.sqs[old].innerHTML ;
-		this.sqs[old].innerHTML = "";
+		if(!Number.isInteger(old)) old = getRowId(old);
+		if(!Number.isInteger(_new)) _new = getRowId(_new);
+		//
+		this.putPiece(_new,this.Pieces[old].Type,this.Pieces[old].Color);
+		this.Pieces[old]= new MyChessPiece({Element:this.Pieces[old].Element});
+		this.Pieces[old].Element.innerHTML = "";
 	}
-	this.getRowId = function(foo){
-		if(Number.isInteger(foo))return foo;
-		
-		var factor;
-		switch (foo[0]){
-			case 'a' : factor=7 ;break;
-			case 'b' : factor=6 ;break;
-			case 'c' : factor=5 ;break;
-			case 'd' : factor=4 ;break;
-			case 'e' : factor=3 ;break;
-			case 'f' : factor=2 ;break;
-			case 'g' : factor=1 ;break;
-			case 'h' : factor=0 ;break;
-			default : {console.error("Unexpected string : "+foo);if(isNaN(foo)) return false;}
-		}
-		return ( (factor * 8)+ (parseInt(foo[1])-1) );
-	}
-	this.isLegalMove = function(e){
-		var target = e.target,
-		type = target.getAttribute("pctype"),
-		sq =  makeNumber(target.getAttribute("sqid")),
-		color = target.getAttribute("pccolor"),
-		_new = (parseInt(e.clientY/50)*8) + (parseInt(e.clientX/50)),
-		possible = [],
-		result = false;
-		function isLegalPawnMove(){
-			
-			console.log(sq,_new)
-			var r= 
-			( (_self.downPlayer=="White" && color=="Black" ) || (_self.downPlayer=="Black" && color=="White") ) ? 
-				( ( _new == sq+8 || ((sq>=8 && sq<16 && _self.sqs[_new-8].innerHTML=="") ? (_new == sq+16):false )) && _new <64 && _self.sqs[_new].innerHTML=="" ) || ( (_new==sq+7 || _new==sq+9) && _new<64 && _self.sqs[_new].innerHTML!="") ||  isEnPassant(): 
-				( ( _new == sq-8 || ((sq>=48 && sq<56) ? (_new == sq-16  && _self.sqs[_new+8].innerHTML==""):false )) && _new <64 && _self.sqs[_new].innerHTML=="") || ( (_new==sq-7 || _new==sq-9) && _new<64 && _self.sqs[_new].innerHTML!="") || isEnPassant();
-			
-			return r;
-		}
-		function isLegalRookMove(){
-			var r =true;
-			console.log(sq,_new)
-			if( (sq - _new)% 8 ==0 ){
-				if(sq>_new){
-					for (var i=sq-8; i > _new; i-=8) {
-						if(_self.sqs[i].innerHTML!="") {
-							r=false;
-							break;
-						}
-					}
-				}
-				else if(sq<_new){
-					for (var i=sq+8; i < _new; i+=8) {
-						if(_self.sqs[i].innerHTML!="") {
-							r=false;
-							break;
-						}
-					}
-				}
-				
-			}
-			else if( (parseInt(sq/8)==parseInt(_new/8)) ){
-				if(sq>_new){
-					for (var i=sq-1; i > _new; i--) {
-						if(_self.sqs[i].innerHTML!="") {
-							r=false;
-							break;
-						}
-					};
-				}
-				else if(sq<_new){
-					for (var i=sq+1; i < _new; i++) {
-						if(_self.sqs[i].innerHTML!="") {
-							r=false;
-							break;
-						}
-					}
-				}
-			}
-			else if(isCastling()){
-				return true;
-			}
-			return r;
-			
-		}
-		function isEnPassant(){
-			return false;
-		}
-		function isCastling(){
-			return false;
-		}
-		switch (type){
-			case "Pawn" : result = isLegalPawnMove();break;
-			case "Rook" : result = isLegalRookMove();break;
-			default : return false;
-		}
-		return result;
-	}
+	
 	this.moveCompleted = function(e){
 		
 		var target = e.target,old = parseInt( target.getAttribute("sqid") ),
@@ -168,11 +199,14 @@ function myChess(elemid){
 		if(old==_new){this.moveCanceled(target);return false;}
 		if(isNaN(old))return false;
 
-		var oldpc = (this.sqs[_new].getElementsByClassName("board-pcs")[0] );
+		var oldpc = (this.Pieces[_new].Element.getElementsByClassName("board-pcs")[0] );
 		if(oldpc != undefined && oldpc.getAttribute("pccolor") == this.playing){
 			this.moveCanceled(target);return false;
 		} 
 		if(target.getAttribute("pccolor")!=this.playing){this.moveCanceled(target);return false;}
+		if(e.clientX >400 || e.clientY >400){
+			this.moveCanceled(target);return false;
+		}
 		target.style.left =0+"px";
 		target.style.top =0+"px";
 		target.style.zIndex =drag.oldZIndex;
@@ -206,7 +240,11 @@ function myChess(elemid){
 		}
 		_self.mainboard.removeEventListener ("mousemove" , OnMouseMove , false);
     	_self.mainboard.removeEventListener ("mouseup" , OnMouseUp , false);
-    	if(_self.isLegalMove(e)){
+
+    	var old =  makeNumber(e.target.getAttribute("sqid")),
+		_new = (parseInt(e.clientY/50)*8) + (parseInt(e.clientX/50));
+		
+    	if(_self.Pieces[old].isLegalMove(old,_new)){
     		_self.moveCompleted(e);
     	}else{
     		_self.moveCanceled(e.target);
@@ -240,7 +278,24 @@ function myChess(elemid){
     	var n = parseInt(v);
 		return n == null || isNaN(n) ? 0 : n;
 	}
+	getRowId = function(foo){
+		if(Number.isInteger(foo))return foo;
+		
+		var factor;
+		switch (foo[0]){
+			case 'a' : factor=7 ;break;
+			case 'b' : factor=6 ;break;
+			case 'c' : factor=5 ;break;
+			case 'd' : factor=4 ;break;
+			case 'e' : factor=3 ;break;
+			case 'f' : factor=2 ;break;
+			case 'g' : factor=1 ;break;
+			case 'h' : factor=0 ;break;
+			default : {console.error("Unexpected string : "+foo);if(isNaN(foo)) return false;}
+		}
+		return ( (factor * 8)+ (parseInt(foo[1])-1) );
+	}
 	this.init();
 	return this;
 }
-var mc = new myChess("mychess-board");
+var mc = new MyChess("mychess-board");
