@@ -6,5 +6,5 @@ HTML
 ```
 Javascript
 ```js
-var var mc = new MyChess("mychess-board");
+var mc = new MyChess("mychess-board");
 ```
