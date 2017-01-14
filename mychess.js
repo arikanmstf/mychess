@@ -88,7 +88,7 @@ function myChess(elemid){
 		return true;
 	}
 	this.moveCompleted = function(e){
-		console.log(e)
+		
 		var target = e.target,old = parseInt( target.getAttribute("sqid") ),
 		_new = (parseInt(e.clientY/50)*8) + (parseInt(e.clientX/50))
 		if(old==_new){this.moveCanceled(target);return false;}
