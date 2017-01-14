@@ -179,10 +179,21 @@ function MyChess(elemid){
 	this.init = function(){
 		this.mainboard  = document.getElementById(elemid),
 		rownumber = 0;
-		
+		makeBoard();
 		sqColors();
 		this.startPosition();
 		this.mainboard.addEventListener ("mousedown", OnMouseDown,false);
+		function makeBoard(){
+			var res = ""; 
+			for (var i = 0; i < 8; i++) {
+				res += '<div class="board-row">';
+				for (var j = 0; j < 8; j++) {
+					res += '<div class="board-sq"></div>';
+				};
+				res += '</div>';
+			};
+			_self.mainboard.innerHTML = res;
+		}
 		function sqColors() {
 			var sqs = _self.mainboard.getElementsByClassName("board-sq");
 			for (var i = 0; i < 64; i++) {
