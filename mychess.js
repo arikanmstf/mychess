@@ -215,7 +215,7 @@ function MyChess(elemid){
 		this.putPiece(58,"Bishop","White");
 		this.putPiece(61,"Bishop","White");
 		this.putPiece(59,"Queen","White");
-		this.putPiece(36,"King","White");
+		this.putPiece(60,"King","White");
 		for (var i = 48; i < 56; i++) {
 			this.putPiece(i,"Pawn","White");
 		};
