@@ -27,6 +27,7 @@ function MyChess(elemid){
 			}
 			for (var i = 0; i < _self.Pieces.length; i++) {
 				if(_self.Pieces[i].Type=="" || _self.Pieces[i].Color == this.Color || _self.Pieces[i].SquareID == this.SquareID ||_self.Pieces[i].Color==exceptThatColor){continue;}
+
 				if(_self.Pieces[i].isLegalMove(this.SquareID)){
 					console.log(_self.Pieces[i],this.SquareID);
 					return true;
@@ -46,8 +47,8 @@ function MyChess(elemid){
 			if(this.isPinned(_new))return false;
 			var old = this.SquareID, color=this.Color,r= 
 			( (_self.downPlayer=="White" && color=="Black" ) || (_self.downPlayer=="Black" && color=="White") ) ? 
-				( ( _new == old+8 || ((old>=8 && old<16 && _self.Pieces[_new-8].Type=="") ? (_new == old+16):false )) && _new <64 && _self.Pieces[_new].Type=="" ) || ( (_new==old+7 || _new==old+9) && _new<64 && _self.Pieces[_new].Type!="") ||  isEnPassant(): 
-				( ( _new == old-8 || ((old>=48 && old<56) ? (_new == old-16  && _self.Pieces[_new+8].Type==""):false )) && _new <64 && _self.Pieces[_new].Type=="") || ( (_new==old-7 || _new==old-9) && _new<64 && _self.Pieces[_new].Type!="") || isEnPassant();
+				( ( _new == old+8 || ((old>=8 && old<16 && _self.Pieces[_new-8].Type=="") ? (_new == old+16):false )) && _new <64 && _self.Pieces[_new].Type=="" ) || ( (_new==old+7 || _new==old+9) && _new<64 && _self.Pieces[_new].Type!="" && (parseInt(old/8)-parseInt(_new/8) ) ==-1) ||  isEnPassant(): 
+				( ( _new == old-8 || ((old>=48 && old<56) ? (_new == old-16  && _self.Pieces[_new+8].Type==""):false )) && _new <64 && _self.Pieces[_new].Type=="") || ( (_new==old-7 || _new==old-9) && _new<64 && _self.Pieces[_new].Type!="" && (parseInt(old/8)-parseInt(_new/8) ) ==1 ) || isEnPassant();
 			
 			return r;
 		}
@@ -124,7 +125,6 @@ function MyChess(elemid){
 		this.isLegalMove = function(_new){
 			if(this.isPinned(_new))return false;
 			var r = true,old=this.SquareID;
-			console.log(old,_new,old-_new)
 			if( (old - _new) % 9 ==0 && _self.Pieces[_new].Element.getAttribute("sqcolor")==_self.Pieces[old].Element.getAttribute("sqcolor") ){
 				if(old>_new){
 					for (var i=old-9; i > _new; i-=9) {
@@ -167,16 +167,19 @@ function MyChess(elemid){
 		}
 	}
 	function MyChessQueen(){
-		MyChessPiece.apply(this,arguments);
+		MyChessBishop.apply(this,arguments);
+		this.iLMB = this.isLegalMove; 
+		MyChessRook.apply(this,arguments);
+		this.iLMR = this.isLegalMove
 
-		this.Type = "Queen";
 		this.isLegalMove = function(_new){
-				if(this.isPinned(_new))return false;
-				var old = this.SquareID;
-				return (
-						false
-					);
+			return (
+				this.iLMR(_new) ||
+				this.iLMB(_new) 
+			);
 		}
+		this.Type = "Queen";
+		
 	}
 	function MyChessKing(){
 		MyChessPiece.apply(this,arguments);
@@ -223,6 +226,12 @@ function MyChess(elemid){
 			_self.Pieces[_new].NeverMoved = false;
 			_self.Pieces[_new+1].NeverMoved = false;
 		}
+	}
+	function MyChessGamePlay(){
+
+	}
+	function MyChessDOM(){
+
 	}
 	
 	this.init = function(){
@@ -382,6 +391,7 @@ function MyChess(elemid){
 				_self.moveCanceled(e.target);
 				return;
 			}
+			_self.Pieces[_new].Type = _temType;
 		}
     	if(_self.Pieces[old].isLegalMove(_new)){
     		_self.Pieces[old].NeverMoved = false;
