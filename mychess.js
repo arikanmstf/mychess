@@ -19,7 +19,7 @@ function MyChess(elemid){
 		this.Element = opts.Element; // HTML DOM Element
 		this.Type = ""; //Pawn,Rook,Knight,Bishop,Queen,King
 		this.NeverMoved = true; // true,false
-		MyChessPiece.prototype.isLegalMove  = this.isLegalMove = function(){console.info("Called abstract function  : isLegalMove()");return false;}
+		this.isLegalMove = function(){console.info("Called abstract function  : isLegalMove()");return false;}
 		this.isUnderAttack = function(exceptThatColor){
 			console.log("checking..	")
 			if(typeof exceptThatColor == undefined || !exceptThatColor){
@@ -35,11 +35,15 @@ function MyChess(elemid){
 			};
 			return false;
 		}
+		this.isPinned = function(_new){
+			return false;
+		}
 	}
 	function MyChessPawn(){
 		MyChessPiece.apply(this,arguments);
 		this.Type = "Pawn";
-		MyChessPawn.prototype.isLegalMove = this.isLegalMove = function (_new){
+		this.isLegalMove = function (_new){
+			if(this.isPinned(_new))return false;
 			var old = this.SquareID, color=this.Color,r= 
 			( (_self.downPlayer=="White" && color=="Black" ) || (_self.downPlayer=="Black" && color=="White") ) ? 
 				( ( _new == old+8 || ((old>=8 && old<16 && _self.Pieces[_new-8].Type=="") ? (_new == old+16):false )) && _new <64 && _self.Pieces[_new].Type=="" ) || ( (_new==old+7 || _new==old+9) && _new<64 && _self.Pieces[_new].Type!="") ||  isEnPassant(): 
@@ -54,7 +58,8 @@ function MyChess(elemid){
 	function MyChessRook(){
 		MyChessPiece.apply(this,arguments);
 		this.Type = "Rook";
-		MyChessRook.prototype.isLegalMove = this.isLegalMove = function(_new){
+		this.isLegalMove = function(_new){
+			if(this.isPinned(_new))return false;
 			var old = this.SquareID, r =true;
 			if( (old - _new)% 8 ==0 ){
 				if(old>_new){
@@ -104,7 +109,8 @@ function MyChess(elemid){
 	function MyChessKnight(){
 		MyChessPiece.apply(this,arguments);
 		this.Type = "Knight";
-		MyChessKnight.prototype.isLegalMove = this.isLegalMove = function(_new){
+		this.isLegalMove = function(_new){
+				if(this.isPinned(_new))return false;
 				var old = this.SquareID,dif = (old-_new);
 				return ( (dif == 10) || (dif == -10) ||
 				(dif == 6) || (dif == -6) ||
@@ -115,7 +121,8 @@ function MyChess(elemid){
 	function MyChessBishop(){
 		MyChessPiece.apply(this,arguments);
 		this.Type = "Bishop";
-		MyChessBishop.prototype.isLegalMove = this.isLegalMove = function(_new){
+		this.isLegalMove = function(_new){
+			if(this.isPinned(_new))return false;
 			var r = true,old=this.SquareID;
 			console.log(old,_new,old-_new)
 			if( (old - _new) % 9 ==0 && _self.Pieces[_new].Element.getAttribute("sqcolor")==_self.Pieces[old].Element.getAttribute("sqcolor") ){
@@ -163,37 +170,37 @@ function MyChess(elemid){
 		MyChessPiece.apply(this,arguments);
 
 		this.Type = "Queen";
-		MyChessQueen.prototype.isLegalMove = this.isLegalMove = function(_new){
-				MyChessBishop.prototype.SquareID = this.SquareID;
-				MyChessRook.prototype.SquareID = this.SquareID;
+		this.isLegalMove = function(_new){
+				if(this.isPinned(_new))return false;
 				var old = this.SquareID;
 				return (
-						MyChessBishop.prototype.isLegalMove(_new) ||
-						MyChessRook.prototype.isLegalMove(_new)
+						false
 					);
 		}
 	}
 	function MyChessKing(){
 		MyChessPiece.apply(this,arguments);
 		this.Type = "King";
-		MyChessKing.prototype.isLegalMove = this.isLegalMove = function(_new){
-			var old = this.SquareID, dif = old- _new;			
+		this.isLegalMove = function(_new){
+
+			var old = this.SquareID, dif = old- _new;
+			//
 			return (
 				(dif==1) || (dif==-1) ||
 				(dif==7) || (dif==-7) ||
 				(dif==8) || (dif==-8) ||
-				(dif==9) || (dif==-9) ||
-				this.isCastling(_new)
+				(dif==9) || (dif==-9) 
+				|| this.isCastling(_new)
 				)
 		}
 		this.isCastling = function (_new){
 			var old = this.SquareID;
 			if(!this.NeverMoved)return false;
-			if(old - _new == 2 && (_self.Pieces[old-4].NeverMoved && _self.Pieces[old-4].Type=="Rook" && _self.Pieces[_new].Type=="" && _self.Pieces[_new+1].Type==""  && _self.Pieces[_new-1].Type=="" && !this.isUnderAttack("White") && !_self.Pieces[old-1].isUnderAttack("White") && !_self.Pieces[_new-2].isUnderAttack("White") ) ){ //Queenside Castling
+			if(old - _new == 2 && (_self.Pieces[old-4].NeverMoved && _self.Pieces[old-4].Type=="Rook" && _self.Pieces[_new].Type=="" && _self.Pieces[_new+1].Type==""  && _self.Pieces[_new-1].Type=="" && !this.isUnderAttack(this.Color) && !_self.Pieces[old-1].isUnderAttack(this.Color) && !_self.Pieces[_new-2].isUnderAttack(this.Color) ) ){ //Queenside Castling
 					this.QueenSideCastling(old,_new);
 					return true;
 			}
-			else if(old - _new == -2 && (_self.Pieces[old+3].NeverMoved && _self.Pieces[old+3].Type=="Rook" && _self.Pieces[_new].Type=="" && _self.Pieces[_new-1].Type=="" && !this.isUnderAttack("White") && !_self.Pieces[old+1].isUnderAttack("White") && !_self.Pieces[old+2].isUnderAttack("White") ) ){ // Kingside Castling
+			else if(old - _new == -2 && (_self.Pieces[old+3].NeverMoved && _self.Pieces[old+3].Type=="Rook" && _self.Pieces[_new].Type=="" && _self.Pieces[_new-1].Type=="" && !this.isUnderAttack(this.Color) && !_self.Pieces[old+1].isUnderAttack(this.Color) && !_self.Pieces[old+2].isUnderAttack(this.Color) ) ){ // Kingside Castling
 				
 					this.KingSideCastling(old,_new);
 					return true;
@@ -358,14 +365,24 @@ function MyChess(elemid){
 			startY : 0,
 			offsetX : 0,
 			offsetY : 0,
-			oldZIndex : 0
+			oldZIndex : 900
 		}
 		_self.mainboard.removeEventListener ("mousemove" , OnMouseMove , false);
     	_self.mainboard.removeEventListener ("mouseup" , OnMouseUp , false);
 
     	var old =  makeNumber(e.target.getAttribute("sqid")),
-		_new = (parseInt(e.clientY/50)*8) + (parseInt(e.clientX/50));
-		
+		_new = (parseInt(e.clientY/50)*8) + (parseInt(e.clientX/50)),
+		_temType = _self.Pieces[_new].Type ;
+
+		 
+		if(_self.Pieces[old].Type=="King" ) {
+			_self.Pieces[_new].Type = "King";
+			if( _self.Pieces[_new].isUnderAttack(_self.Pieces[old].Color)){
+				_self.Pieces[_new].Type = _temType;
+				_self.moveCanceled(e.target);
+				return;
+			}
+		}
     	if(_self.Pieces[old].isLegalMove(_new)){
     		_self.Pieces[old].NeverMoved = false;
     		_self.moveCompleted(e);
@@ -388,7 +405,7 @@ function MyChess(elemid){
     	    drag.offsetY = makeNumber(target.style.top);
         
         	drag.oldZIndex = target.style.zIndex;
-        	target.style.zIndex = 10000;
+        	target.style.zIndex = 1000;
         
         	drag.element = target;
         	document.addEventListener("onmousemove" , OnMouseMove,false);
