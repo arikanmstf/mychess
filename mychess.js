@@ -266,7 +266,6 @@ function MyChess(elemid,opts){
 		this.Type = "King";
 		this.__construct();
 		this.isLegalMove = function(_new){
-
 			var old = this.SquareID, dif = old- _new;
 			//
 			return (
@@ -275,7 +274,7 @@ function MyChess(elemid,opts){
 				(dif==8) || (dif==-8) ||
 				(dif==9) || (dif==-9) 
 				|| this.isCastling(_new)
-				)
+				) && !this.isUnderAttack(this.Color)
 		}
 		this.isCastling = function (_new){
 			var old = this.SquareID;
@@ -316,6 +315,23 @@ function MyChess(elemid,opts){
 		}
 		this.White = {
 			King:{}
+		}
+		for (var i = 0; i < _self.Pieces.length; i++) {
+			_self.removePiece(i);
+			_self.Pieces[i] = new MyChessPiece({SquareID:i,Element:_self.Pieces[i].Element});
+		};
+
+		this.isCheckMate = function(){
+			var King = this[this.playing].King,
+			possibleMoves = [King.SquareID+1,King.SquareID-1,King.SquareID+7,King.SquareID-7,King.SquareID+8,King.SquareID-8,King.SquareID+9,King.SquareID-9],
+			r = true;
+			for (var i = 0; i < possibleMoves.length; i++) {
+				if(King.isLegalMove (possibleMoves[i]) ){
+					r=false;
+					break;
+				}
+			};
+			return r;
 		}
 	}
 	function MyChessMove(opts){
@@ -376,8 +392,11 @@ function MyChess(elemid,opts){
 	this.init = function(){
 		
 		this.DOM = new MyChessDOM();
-		this.GamePlay = new MyChessGamePlay();
 		this.Debug = new MyChessDebug();
+		this.start();
+	}
+	this.start= function(){
+		this.GamePlay = new MyChessGamePlay();
 		this.startPosition();
 	}
 	this.setWidth = function(w){
@@ -509,22 +528,10 @@ function MyChess(elemid,opts){
 		else this.GamePlay.playing="White";
 	}
 	
-	this.moveCompleted = function(e){
+	this.moveCompleted = function(old,_new){
 		
-		var target = e.target,old = parseInt( target.getAttribute("sqid") ),
-		_new = (parseInt(e.clientY/ parseInt(_self.Width/8) )*8) + (parseInt(e.clientX/parseInt(_self.Width/8)))
-		if(old==_new){this.moveCanceled(target);return false;}
-		if(_new >=64){this.moveCanceled(target);return false;}
-		if(isNaN(old))return false;
-
-		var oldpc = (this.Pieces[_new].Element.getElementsByClassName("board-pcs")[0] );
-		if(oldpc != undefined && oldpc.getAttribute("pccolor") == this.GamePlay.playing){
-			this.moveCanceled(target);return false;
-		} 
-		if(target.getAttribute("pccolor")!=this.GamePlay.playing){this.moveCanceled(target);return false;}
-		if(e.clientX >parseInt (_self.Width) || e.clientY > parseInt(_self.Width) ){
-			this.moveCanceled(target);return false;
-		}
+		var target = _self.Pieces[old].Element.getElementsByClassName("board-pcs")[0];
+		
 		target.style.left =0+"px";
 		target.style.top =0+"px";
 		target.style.zIndex =drag.oldZIndex;
@@ -560,12 +567,26 @@ function MyChess(elemid,opts){
 
     	var old =  makeNumber(e.target.getAttribute("sqid")),
 		_new = (parseInt(e.clientY/parseInt(_self.Width/8))*8) + (parseInt(e.clientX/parseInt(_self.Width/8))),
-		_temType = _self.Pieces[_new].Type ;
+		_temType = _self.Pieces[_new].Type ,
+		target = e.target;
+
+		if(old==_new){_self.moveCanceled(target);return false;}
+		if(_new >=64){_self.moveCanceled(target);return false;}
+		if(isNaN(old))return false;
+
+		var oldpc = (_self.Pieces[_new].Element.getElementsByClassName("board-pcs")[0] );
+		if(oldpc != undefined && oldpc.getAttribute("pccolor") == _self.GamePlay.playing){
+			_self.moveCanceled(target);return false;
+		} 
+		if(target.getAttribute("pccolor")!=_self.GamePlay.playing){_self.moveCanceled(target);return false;}
+		if(e.clientX >parseInt (_self.Width) || e.clientY > parseInt(_self.Width) ){
+			_self.moveCanceled(target);return false;
+		}
 
 		 
 		if(_self.Pieces[old].Type=="King" ) {
 			_self.Pieces[_new].Type = "King";
-			if( _self.Pieces[_new].isUnderAttack(_self.Pieces[old].Color)){
+			if( _self.Pieces[_new].isUnderAttack(_self.Pieces[old].Color) ){
 				_self.Pieces[_new].Type = _temType;
 				_self.moveCanceled(e.target);
 				return;
@@ -581,8 +602,12 @@ function MyChess(elemid,opts){
     		if(_self.Pieces[old].Type=="Pawn" ) {
 				_self.Pieces[old].isPromote(_new);
 			}
+
     		_self.Pieces[old].NeverMoved = false;
-    		_self.moveCompleted(e);
+    		_self.moveCompleted(old,_new);
+    		if(_self.GamePlay.isCheckMate() ){
+    			console.log("CheckMate ! ! ");
+    		}
     	}else{
     		_self.moveCanceled(e.target);
     	}
