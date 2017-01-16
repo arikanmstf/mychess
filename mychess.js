@@ -553,4 +553,4 @@ function MyChess(elemid,opts){
 	this.init();
 	return this;
 }
-var mc = new MyChess("mychess-board",{width:300});
+var mc = new MyChess("mychess-board",{width:500});
