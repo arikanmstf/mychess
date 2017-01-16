@@ -1,7 +1,6 @@
 function MyChess(elemid){
 	var _self = this;
 	this.elemid =elemid;
-	this.downPlayer = "White";
 	this.Pieces = [];
 	var drag = {
 		element:null,
@@ -18,6 +17,7 @@ function MyChess(elemid){
 	MyChessBishop.prototype = Object.create(MyChessPiece.prototype);
 	MyChessQueen.prototype = Object.create(MyChessPiece.prototype);
 	MyChessKing.prototype = Object.create(MyChessPiece.prototype);
+	Array.prototype.last = function(){return this[this.length-1]}
 
 	function MyChessPiece(opts){
 		this.SquareID = opts.SquareID;// 0-63
@@ -91,13 +91,28 @@ function MyChess(elemid){
 		this.__construct();
 		this.isLegalMove = function (_new){
 			var old = this.SquareID, color=this.Color,r= 
-			( (_self.downPlayer=="White" && color=="Black" ) || (_self.downPlayer=="Black" && color=="White") ) ? 
-				( ( _new == old+8 || ((old>=8 && old<16 && _self.Pieces[_new-8].Type=="") ? (_new == old+16):false )) && _new <64 && _self.Pieces[_new].Type=="" ) || ( (_new==old+7 || _new==old+9) && _new<64 && _self.Pieces[_new].Type!="" && (parseInt(old/8)-parseInt(_new/8) ) ==-1) ||  isEnPassant(): 
-				( ( _new == old-8 || ((old>=48 && old<56) ? (_new == old-16  && _self.Pieces[_new+8].Type==""):false )) && _new <64 && _self.Pieces[_new].Type=="") || ( (_new==old-7 || _new==old-9) && _new<64 && _self.Pieces[_new].Type!="" && (parseInt(old/8)-parseInt(_new/8) ) ==1 ) || isEnPassant();
+			( ( color=="Black" )  ) ? 
+				( ( _new == old+8 || ((old>=8 && old<16 && _self.Pieces[_new-8].Type=="") ? (_new == old+16):false )) && _new <64 && _self.Pieces[_new].Type=="" ) || ( (_new==old+7 || _new==old+9) && _new<64 && _self.Pieces[_new].Type!="" && (parseInt(old/8)-parseInt(_new/8) ) ==-1) ||  this.isEnPassant(_new): 
+				( ( _new == old-8 || ((old>=48 && old<56) ? (_new == old-16  && _self.Pieces[_new+8].Type==""):false )) && _new <64 && _self.Pieces[_new].Type=="") || ( (_new==old-7 || _new==old-9) && _new<64 && _self.Pieces[_new].Type!="" && (parseInt(old/8)-parseInt(_new/8) ) ==1 ) || this.isEnPassant(_new);
 			
 			return r;
 		}
-		function isEnPassant(){
+		this.isEnPassant = function(_new){
+			var lastMove = _self.GamePlay.Moves.last(),old = this.SquareID;
+			
+			if ( this.Color=="Black" && old >=32 && old<40 &&  (old==_new-7 || old==_new-9) && _new<64 && _self.Pieces[_new-8].Type=="Pawn" && (parseInt(old/8)-parseInt(_new/8) ) ==-1 && lastMove.From == _new+8 && lastMove.To == _new-8 && lastMove.Piece.Color == "White" && lastMove.Piece.Type == "Pawn" && _self.Pieces[_new].Type==""){
+
+				console.log("EnPassant")
+				_self.removePiece(_new-8);
+				return true;
+
+			}
+			else if( this.Color=="White" && old >=24 && old<32 &&  (old==_new+7 || old==_new+9) && _new<64 && _self.Pieces[_new+8].Type=="Pawn" && (parseInt(old/8)-parseInt(_new/8) ) ==1 && lastMove.From == _new-8 && lastMove.To == _new+8 && lastMove.Piece.Color == "Black" && lastMove.Piece.Type == "Pawn" && _self.Pieces[_new].Type==""){
+				_self.removePiece(_new+8);
+				console.log("EnPassant");
+			 	return true;
+
+			}
 			return false;
 		}
 	}
@@ -276,13 +291,18 @@ function MyChess(elemid){
 	}
 	function MyChessGamePlay(){
 		this.playing = "White"; //who starts the game
-		
+		this.Moves = []; //moves array.
 		this.Black = {
 			King:{}
 		}
 		this.White = {
 			King:{}
 		}
+	}
+	function MyChessMove(opts){
+		this.Piece = opts.Piece;
+		this.From = opts.From;
+		this.To = opts.To;
 	}
 	function MyChessDOM(){
 		_self.mainboard.classList.add("mychess-main");
@@ -391,6 +411,13 @@ function MyChess(elemid){
 		this.Pieces[old]= new MyChessPiece({Element:this.Pieces[old].Element,SquareID:old});
 		this.Pieces[old].Element.innerHTML = "";
 		this.Pieces[_new].NeverMoved = false;
+		this.GamePlay.Moves.push(new MyChessMove({
+			Piece: this.Pieces[_new],
+			From : old,
+			To   : _new
+		}));
+		if(this.GamePlay.playing=="White")this.GamePlay.playing="Black";
+		else this.GamePlay.playing="White";
 	}
 	
 	this.moveCompleted = function(e){
@@ -414,8 +441,7 @@ function MyChess(elemid){
 		target.style.zIndex =drag.oldZIndex;
 		target.setAttribute("sqid", _new);
 		this.movePiece(old,_new);
-		if(this.GamePlay.playing=="White")this.GamePlay.playing="Black";
-		else this.GamePlay.playing="White";
+		
 	}
 	this.moveCanceled = function(target){
 		target.style.left =0+"px";
