@@ -128,7 +128,7 @@ function MyChess(elemid,opts){
 					sqs[0].innerHTML = "<img draggable='true' src='./img/pcs/"+this.Color+"Queen.png' class='promote-pcs' pccolor="+this.Color+" pctype='Queen' style='width:"+parseInt(_self.Width/5)+"px;height:"+parseInt(_self.Width/5)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
 					sqs[1].innerHTML = "<img draggable='true' src='./img/pcs/"+this.Color+"Rook.png' class='promote-pcs' pccolor="+this.Color+" pctype='Rook' style='width:"+parseInt(_self.Width/5)+"px;height:"+parseInt(_self.Width/5)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
 					sqs[2].innerHTML = "<img draggable='true' src='./img/pcs/"+this.Color+"Bishop.png' class='promote-pcs' pccolor="+this.Color+" pctype='Bishop' style='width:"+parseInt(_self.Width/5)+"px;height:"+parseInt(_self.Width/5)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
-					sqs[3].innerHTML = "<img draggable='true' src='./img/pcs/"+this.Color+"Knight.png' class='promote-sq-pcs' pccolor="+this.Color+" pctype='Knight' style='width:"+parseInt(_self.Width/5)+"px;height:"+parseInt(_self.Width/5)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
+					sqs[3].innerHTML = "<img draggable='true' src='./img/pcs/"+this.Color+"Knight.png' class='promote-pcs' pccolor="+this.Color+" pctype='Knight' style='width:"+parseInt(_self.Width/5)+"px;height:"+parseInt(_self.Width/5)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
 						return true;
 				}
 				return false;
@@ -342,7 +342,7 @@ function MyChess(elemid,opts){
 				};
 				res += '</div>';
 			};
-			res += '<div class="board-promote" style="width:'+parseInt(_self.Width/2)+'px;height:'+parseInt(_self.Width/2)+'px;left:'+parseInt(_self.Width/4)+'px;top:'+parseInt(_self.Width/4)+'px;display:none;"><div class="promote-sq light"></div><div class="promote-sq dark"></div><div class="promote-sq dark"></div><div class="promote-sq light"></div></div>';
+			res += '<div class="board-promote" style="width:'+parseInt(_self.Width/2)+'px;height:'+parseInt(_self.Width/2)+'px;left:'+parseInt(_self.Width/4)+'px;top:'+parseInt(_self.Width/4)+'px;display:none;"><div class="promote-sq light" style="width:'+parseInt(_self.Width/4)+'px;height:'+parseInt(_self.Width/4)+'px"></div><div class="promote-sq dark" style="width:'+parseInt(_self.Width/4)+'px;height:'+parseInt(_self.Width/4)+'px"></div><div class="promote-sq dark" style="width:'+parseInt(_self.Width/4)+'px;height:'+parseInt(_self.Width/4)+'px"></div><div class="promote-sq light" style="width:'+parseInt(_self.Width/4)+'px;height:'+parseInt(_self.Width/4)+'px"></div></div>';
 			res += '</div>';
 			res += '<div class="message-main" style="display:none;"><div class="message-cover"</div></div>';
 			_self.mychessmain.innerHTML = res;
@@ -382,32 +382,61 @@ function MyChess(elemid,opts){
 	}
 	this.setWidth = function(w){
 		_self.Width 
-		= _self.mychessmain.style.width 
-		=_self.mychessmain.style.height 
 		=  w 
 		= parseInt(w);
+
+		_self.mychessmain.style.width 
+		= _self.mychessmain.style.height
+		= w+"px"; 
 		var rows = _self.boardmain.getElementsByClassName("board-row"),
 		 	sqs  = _self.boardmain.getElementsByClassName("board-sq"),
-		 	pcs  = _self.boardmain.getElementsByClassName("board-pcs");
+		 	pcs  = _self.boardmain.getElementsByClassName("board-pcs"),
+		 	prmtpcs = _self.mychessmain.getElementsByClassName("promote-pcs"),
+		 	prmtsqs = _self.mychessmain.getElementsByClassName("promote-sq");
+		 	brdprm = _self.mychessmain.getElementsByClassName("board-promote");
 
 		for (var i = 0; i < rows.length; i++) {
-			rows[i].style.width = w;
-			rows[i].style.height = parseInt(w/8);
+			rows[i].style.width = w+"px";
+			rows[i].style.height = parseInt(w/8)+"px";
 
 		};
 		for (var i = 0; i < sqs.length; i++) {
 			sqs[i].style.width 
 			= sqs[i].style.height 
-			= parseInt(w/8);
+			= parseInt(w/8)+"px";
 		};
 		for (var i = 0; i < pcs.length; i++) {
 			pcs[i].style.width 
 			= pcs[i].style.height 
-			= parseInt(w/10);
+			= parseInt(w/10)+"px";
 			pcs[i].style.marginLeft
 			= pcs[i].style.marginTop
-			= parseInt((w/8-w/10)/2);
+			= parseInt((w/8-w/10)/2)+"px";
 		};
+		for (var i = 0; i < brdprm.length; i++) {
+			brdprm[i].style.width
+			= brdprm[i].style.height
+			= parseInt(w/2)+"px";
+			brdprm[i].style.top
+			= brdprm[i].style.left
+			= parseInt(w/4)+"px";
+
+		};
+		for (var i = 0; i < prmtsqs.length; i++) {
+			prmtsqs[i].style.width 
+			= prmtsqs[i].style.height 
+			= parseInt(w/4)+"px";
+		};
+		for (var i = 0; i < prmtpcs.length; i++) {
+			prmtpcs[i].style.width 
+			= prmtpcs[i].style.height 
+			= parseInt(w/5)+"px";
+			prmtpcs[i].style.marginLeft
+			= prmtpcs[i].style.marginTop
+			= parseInt((w/8-w/10))+"px";
+		};
+
+
 
 
 	}
