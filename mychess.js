@@ -116,6 +116,24 @@ function MyChess(elemid,opts){
 			}
 			return false;
 		}
+		this.isPromote = function(_new){
+		
+			var sqs = _self.boardmain.getElementsByClassName('promote-sq');
+			if ( (this.Color == "White" && _new>=0 && _new<8 ) || (this.Color == "Black" && _new >= 56 && _new < 64) ){
+					console.log("isPromote")
+					var a = _self.mychessmain.getElementsByClassName('board-promote');
+					var b = _self.mychessmain.getElementsByClassName('message-main');
+					a[0].style.display = "block";
+					b[0].style.display = "block";
+					sqs[0].innerHTML = "<img draggable='true' src='./img/pcs/"+this.Color+"Queen.png' class='promote-pcs' pccolor="+this.Color+" pctype='Queen' style='width:"+parseInt(_self.Width/5)+"px;height:"+parseInt(_self.Width/5)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
+					sqs[1].innerHTML = "<img draggable='true' src='./img/pcs/"+this.Color+"Rook.png' class='promote-pcs' pccolor="+this.Color+" pctype='Rook' style='width:"+parseInt(_self.Width/5)+"px;height:"+parseInt(_self.Width/5)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
+					sqs[2].innerHTML = "<img draggable='true' src='./img/pcs/"+this.Color+"Bishop.png' class='promote-pcs' pccolor="+this.Color+" pctype='Bishop' style='width:"+parseInt(_self.Width/5)+"px;height:"+parseInt(_self.Width/5)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
+					sqs[3].innerHTML = "<img draggable='true' src='./img/pcs/"+this.Color+"Knight.png' class='promote-sq-pcs' pccolor="+this.Color+" pctype='Knight' style='width:"+parseInt(_self.Width/5)+"px;height:"+parseInt(_self.Width/5)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
+						return true;
+				}
+				return false;
+		
+		}
 	}
 	function MyChessRook(){
 		MyChessPiece.apply(this,arguments);
@@ -324,7 +342,9 @@ function MyChess(elemid,opts){
 				};
 				res += '</div>';
 			};
-			res += '<div>';
+			res += '<div class="board-promote" style="width:'+parseInt(_self.Width/2)+'px;height:'+parseInt(_self.Width/2)+'px;left:'+parseInt(_self.Width/4)+'px;top:'+parseInt(_self.Width/4)+'px;display:none;"><div class="promote-sq light"></div><div class="promote-sq dark"></div><div class="promote-sq dark"></div><div class="promote-sq light"></div></div>';
+			res += '</div>';
+			res += '<div class="message-main" style="display:none;"><div class="message-cover"</div></div>';
 			_self.mychessmain.innerHTML = res;
 			sqColors();
 		}
@@ -359,7 +379,37 @@ function MyChess(elemid,opts){
 		this.GamePlay = new MyChessGamePlay();
 		this.Debug = new MyChessDebug();
 		this.startPosition();
-		
+	}
+	this.setWidth = function(w){
+		_self.Width 
+		= _self.mychessmain.style.width 
+		=_self.mychessmain.style.height 
+		=  w 
+		= parseInt(w);
+		var rows = _self.boardmain.getElementsByClassName("board-row"),
+		 	sqs  = _self.boardmain.getElementsByClassName("board-sq"),
+		 	pcs  = _self.boardmain.getElementsByClassName("board-pcs");
+
+		for (var i = 0; i < rows.length; i++) {
+			rows[i].style.width = w;
+			rows[i].style.height = parseInt(w/8);
+
+		};
+		for (var i = 0; i < sqs.length; i++) {
+			sqs[i].style.width 
+			= sqs[i].style.height 
+			= parseInt(w/8);
+		};
+		for (var i = 0; i < pcs.length; i++) {
+			pcs[i].style.width 
+			= pcs[i].style.height 
+			= parseInt(w/10);
+			pcs[i].style.marginLeft
+			= pcs[i].style.marginTop
+			= parseInt((w/8-w/10)/2);
+		};
+
+
 	}
 	this.startPosition = function () {
 		this.putPiece(0,"Rook","Black");
@@ -499,6 +549,9 @@ function MyChess(elemid,opts){
 			}
 		}
     	if(_self.Pieces[old].isLegalMove(_new)){
+    		if(_self.Pieces[old].Type=="Pawn" ) {
+				_self.Pieces[old].isPromote(_new);
+			}
     		_self.Pieces[old].NeverMoved = false;
     		_self.moveCompleted(e);
     	}else{
@@ -553,4 +606,3 @@ function MyChess(elemid,opts){
 	this.init();
 	return this;
 }
-var mc = new MyChess("mychess-board",{width:500});
