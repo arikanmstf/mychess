@@ -1,17 +1,17 @@
 body{background-color: #000;}
-.board-main >.board-row	 > .board-sq{
+.mychess-main > .board-main >.board-row > .board-sq{
 	width:50px;
 	height:50px;
 	float: left;
 	position: relative;	
 }
-.board-main >.board-row{
+.mychess-main > .board-main >.board-row{
 	width: 400px;
 	height: 50px;
 	position: relative;
 
 }
-.board-main >.board-row	 > .board-sq > img.board-pcs{
+.mychess-main > .board-main >.board-row	 > .board-sq > img.board-pcs{
 	width: 40px;
 	height: 40px;
 	margin-left: 5px;
@@ -19,15 +19,15 @@ body{background-color: #000;}
 	position: relative;
 	cursor: pointer;
 }
-.board-main >.board-row > .board-sq.light{
+.mychess-main > .board-main >.board-row > .board-sq.light{
 	background-color: #efefef;
 }
-.board-main >.board-row > .board-sq.light:hover,.board-main >.board-row > .board-sq.light.hover{
+.mychess-main > .board-main >.board-row > .board-sq.light:hover,.board-main >.board-row > .board-sq.light.hover{
 	background-color: #e1e877;
 }
-.board-main >.board-row > .board-sq.dark{
+.mychess-main > .board-main >.board-row > .board-sq.dark{
 	background-color: #306b7d; /* #247328; */
 }
-.board-main >.board-row > .board-sq.dark:hover,.board-main >.board-row > .board-sq.dark.hover{
+.mychess-main > .board-main >.board-row > .board-sq.dark:hover,.board-main >.board-row > .board-sq.dark.hover{
 	background-color: #48a0bb; /* #97dc6b; */
 }
