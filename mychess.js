@@ -1,6 +1,7 @@
-function MyChess(elemid){
+function MyChess(elemid,opts){
 	var _self = this;
 	this.elemid =elemid;
+	this.Width = opts && opts.width ? opts.width : 400;
 	this.Pieces = [];
 	var drag = {
 		element:null,
@@ -46,7 +47,7 @@ function MyChess(elemid){
 		};
 		this.__construct = function(){
 			if(this.Type != ""){
-				this.Element.innerHTML = "<img draggable='true' src='./img/pcs/"+this.Color+this.Type+".png' class='board-pcs' pccolor="+this.Color+" sqid="+this.SquareID+" pctype="+this.Type+" />";
+				this.Element.innerHTML = "<img draggable='true' src='./img/pcs/"+this.Color+this.Type+".png' class='board-pcs' pccolor="+this.Color+" sqid="+this.SquareID+" pctype="+this.Type+" style='width:"+parseInt(_self.Width/10)+"px;height:"+parseInt(_self.Width/10)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
 			}
 		}
 		this.isLegalMove = function(){console.info("Called abstract function  : isLegalMove()");return false;}
@@ -305,24 +306,30 @@ function MyChess(elemid){
 		this.To = opts.To;
 	}
 	function MyChessDOM(){
-		_self.mainboard.classList.add("mychess-main");
+		_self.mychessmain  = document.getElementById(elemid);
+		
+		_self.mychessmain.classList.add("mychess-main");
+		_self.mychessmain.style.width = parseInt(_self.Width);
+		_self.mychessmain.style.height = parseInt(_self.Width);
 		makeBoard();
+		_self.boardmain = _self.mychessmain.getElementsByClassName("board-main")[0];
+		_self.boardmain.addEventListener ("mousedown", OnMouseDown,false);
 		function makeBoard(){
 
 			var res = "<div class='board-main'>"; 
 			for (var i = 0; i < 8; i++) {
-				res += '<div class="board-row">';
+				res += '<div class="board-row" style="width:'+parseInt(_self.Width)+'px;height:'+parseInt(_self.Width/8)+'px" >';
 				for (var j = 0; j < 8; j++) {
-					res += '<div class="board-sq"></div>';
+					res += '<div class="board-sq" style="width:'+(_self.Width/8)+'px;height:'+parseInt(_self.Width/8)+'px"></div>';
 				};
 				res += '</div>';
 			};
 			res += '<div>';
-			_self.mainboard.innerHTML = res;
+			_self.mychessmain.innerHTML = res;
 			sqColors();
 		}
 		function sqColors() {
-			var sqs = _self.mainboard.getElementsByClassName("board-sq"),rownumber = 0;
+			var sqs = _self.mychessmain.getElementsByClassName("board-sq"),rownumber = 0;
 			for (var i = 0; i < 64; i++) {
 					if(i%8==0)rownumber++;
 					if ( ( rownumber%2==0 && i%2==0 ) ||( rownumber%2==1 && i%2==1 ) ) {
@@ -340,16 +347,19 @@ function MyChess(elemid){
 		}
 	}
 	function MyChessDebug(){
-		_self.mainboard.innerHTML += "<div class='board-debug'><ul></ul></div>";
+		var div = document.createElement('div');
+		div.className ="debug-main";
+		div.innerHTML = "<ul></ul>";
+		_self.mychessmain.appendChild(div);
 	}
 	
 	this.init = function(){
-		this.mainboard  = document.getElementById(elemid);
+		
 		this.DOM = new MyChessDOM();
 		this.GamePlay = new MyChessGamePlay();
-		
+		this.Debug = new MyChessDebug();
 		this.startPosition();
-		this.mainboard.addEventListener ("mousedown", OnMouseDown,false);
+		
 	}
 	this.startPosition = function () {
 		this.putPiece(0,"Rook","Black");
@@ -423,7 +433,7 @@ function MyChess(elemid){
 	this.moveCompleted = function(e){
 		
 		var target = e.target,old = parseInt( target.getAttribute("sqid") ),
-		_new = (parseInt(e.clientY/50)*8) + (parseInt(e.clientX/50))
+		_new = (parseInt(e.clientY/ parseInt(_self.Width/8) )*8) + (parseInt(e.clientX/parseInt(_self.Width/8)))
 		if(old==_new){this.moveCanceled(target);return false;}
 		if(_new >=64){this.moveCanceled(target);return false;}
 		if(isNaN(old))return false;
@@ -433,7 +443,7 @@ function MyChess(elemid){
 			this.moveCanceled(target);return false;
 		} 
 		if(target.getAttribute("pccolor")!=this.GamePlay.playing){this.moveCanceled(target);return false;}
-		if(e.clientX >400 || e.clientY >400){
+		if(e.clientX >parseInt (_self.Width) || e.clientY > parseInt(_self.Width) ){
 			this.moveCanceled(target);return false;
 		}
 		target.style.left =0+"px";
@@ -450,7 +460,7 @@ function MyChess(elemid){
 	}
 
 	OnMouseMove = function(e){
-		_self.mainboard.addEventListener ("mouseup", OnMouseUp,false);
+		_self.boardmain.addEventListener ("mouseup", OnMouseUp,false);
     	if (e == null) var e = window.event; 
     	if(drag.element != null){
    			drag.element.style.left = (drag.offsetX + e.clientX - drag.startX) + 'px';
@@ -466,11 +476,11 @@ function MyChess(elemid){
 			offsetY : 0,
 			oldZIndex : 900
 		}
-		_self.mainboard.removeEventListener ("mousemove" , OnMouseMove , false);
-    	_self.mainboard.removeEventListener ("mouseup" , OnMouseUp , false);
+		_self.boardmain.removeEventListener ("mousemove" , OnMouseMove , false);
+    	_self.boardmain.removeEventListener ("mouseup" , OnMouseUp , false);
 
     	var old =  makeNumber(e.target.getAttribute("sqid")),
-		_new = (parseInt(e.clientY/50)*8) + (parseInt(e.clientX/50)),
+		_new = (parseInt(e.clientY/parseInt(_self.Width/8))*8) + (parseInt(e.clientX/parseInt(_self.Width/8))),
 		_temType = _self.Pieces[_new].Type ;
 
 		 
@@ -497,7 +507,7 @@ function MyChess(elemid){
 	}
 
 	OnMouseDown =function (e){
-		_self.mainboard.addEventListener ("mousemove", OnMouseMove,false);
+		_self.boardmain.addEventListener ("mousemove", OnMouseMove,false);
     	if (e == null) e = window.event; 
     	var target = e.target != null ? e.target : e.srcElement;
     	if(target==null)return false;
@@ -543,4 +553,4 @@ function MyChess(elemid){
 	this.init();
 	return this;
 }
-var mc = new MyChess("mychess-board");
+var mc = new MyChess("mychess-board",{width:300});
