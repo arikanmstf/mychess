@@ -75,7 +75,7 @@ function MyChess(elemid){
 
 			_self.Pieces[old] = new MyChessPiece({SquareID:old});
 			
-			if(_self.GamePlay[color].King.isUnderAttack("White")){
+			if(_self.GamePlay[color].King.isUnderAttack(color)){
 				_self.Pieces[_new] = _tempObj2.copy();
 				_self.Pieces[old] = _tempObj.copy();
 				return true;
@@ -337,7 +337,7 @@ function MyChess(elemid){
 		this.putPiece(1,"Knight","Black");
 		this.putPiece(6,"Knight","Black");
 		this.putPiece(2,"Bishop","Black");
-		this.putPiece(33,"Bishop","Black");
+		this.putPiece(5,"Bishop","Black");
 		this.putPiece(3,"Queen","Black");
 		this.putPiece(4,"King","Black");
 		for (var i = 8; i < 16; i++) {
