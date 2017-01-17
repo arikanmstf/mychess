@@ -1,6 +1,7 @@
 function MyChess(elemid,opts){
 	var _self = this;
 	this.elemid =elemid;
+	this._temp = null;
 	this.Width = opts && opts.width ? opts.width : 400;
 	this.Pieces = [];
 	var drag = {
@@ -18,12 +19,12 @@ function MyChess(elemid,opts){
 	MyChessBishop.prototype = Object.create(MyChessPiece.prototype);
 	MyChessQueen.prototype = Object.create(MyChessPiece.prototype);
 	MyChessKing.prototype = Object.create(MyChessPiece.prototype);
-	Array.prototype.last = function(){return this[this.length-1]}
+	Array.prototype.last = function(){ return this.length >0 ? this[this.length-1] : false;}
 
 	function MyChessPiece(opts){
 		this.SquareID = opts.SquareID;// 0-63
 		this.SquareName = opts.SquareName; // a1-h8
-		this.Color = opts.Color;//White,Black
+		this.Color = opts.Color ? opts.Color : "";//White,Black
 		this.Element = opts.Element; // HTML DOM Element
 		this.Type = ""; //Pawn,Rook,Knight,Bishop,Queen,King
 		this.NeverMoved = true; // true,false
@@ -55,14 +56,19 @@ function MyChess(elemid,opts){
 			if(typeof exceptThatColor == undefined || !exceptThatColor){
 				exceptThatColor = "";
 			}
+			var k = false,_temp = this.Type;
+			this.Type = "Piece";
 			for (var i = 0; i < _self.Pieces.length; i++) {
-				if(_self.Pieces[i].Type=="" || _self.Pieces[i].Color == this.Color || _self.Pieces[i].SquareID == this.SquareID ||_self.Pieces[i].Color==exceptThatColor){continue;}
-
-				if(_self.Pieces[i].isLegalMove(this.SquareID)){
+				if(_self.Pieces[i].Type=="" || _self.Pieces[i].Color == "" || _self.Pieces[i].SquareID == this.SquareID ||_self.Pieces[i].Color==exceptThatColor){continue;}
+				if(_self.Pieces[i].Type == "King")k = true;
+				else k = false;
+				
+				if(_self.Pieces[i].isLegalMove(this.SquareID,true,k) ){
+					this.Type = _temp;
 					return true;
 				}
-
 			};
+			this.Type = _temp;
 			return false;
 		}
 		this.isKinginDanger = function(_new){
@@ -90,25 +96,32 @@ function MyChess(elemid,opts){
 		MyChessPiece.apply(this,arguments);
 		this.Type = "Pawn";
 		this.__construct();
-		this.isLegalMove = function (_new){
+		this.isLegalMove = function (_new,makeSqEmtpy){
+			if(this.SquareID == _new)return false;
+			if(_new<0 || _new >63)return false;
+
+			if(!makeSqEmtpy || typeof makeSqEmtpy == "undefined")makeSqEmtpy=false;
+			//
+			if( (_self.Pieces[_new] && _self.Pieces[_new].Color == this.Color) && !makeSqEmtpy ) return false;
+
 			var old = this.SquareID, color=this.Color,r= 
 			( ( color=="Black" )  ) ? 
-				( ( _new == old+8 || ((old>=8 && old<16 && _self.Pieces[_new-8].Type=="") ? (_new == old+16):false )) && _new <64 && _self.Pieces[_new].Type=="" ) || ( (_new==old+7 || _new==old+9) && _new<64 && _self.Pieces[_new].Type!="" && (parseInt(old/8)-parseInt(_new/8) ) ==-1) ||  this.isEnPassant(_new): 
-				( ( _new == old-8 || ((old>=48 && old<56) ? (_new == old-16  && _self.Pieces[_new+8].Type==""):false )) && _new <64 && _self.Pieces[_new].Type=="") || ( (_new==old-7 || _new==old-9) && _new<64 && _self.Pieces[_new].Type!="" && (parseInt(old/8)-parseInt(_new/8) ) ==1 ) || this.isEnPassant(_new);
+				( ( _new == old+8 || ((old>=8 && old<16 && ( _self.Pieces[_new-8] && _self.Pieces[_new-8].Type=="")) ? (_new == old+16):false )) && _new <64 && _self.Pieces[_new].Type=="" ) || ( (_new==old+7 || _new==old+9) && _new<64 && _self.Pieces[_new].Type!="" && (parseInt(old/8)-parseInt(_new/8) ) ==-1) ||  this.isEnPassant(_new): 
+				( ( _new == old-8 || ((old>=48 && old<56) ? (_new == old-16  && ( _self.Pieces[_new+8] && _self.Pieces[_new+8].Type=="")):false )) && _new <64 && _self.Pieces[_new].Type=="") || ( (_new==old-7 || _new==old-9) && _new<64 && _self.Pieces[_new].Type!="" && (parseInt(old/8)-parseInt(_new/8) ) ==1 ) || this.isEnPassant(_new);
 			
 			return r;
 		}
 		this.isEnPassant = function(_new){
 			var lastMove = _self.GamePlay.Moves.last(),old = this.SquareID;
 			
-			if ( this.Color=="Black" && old >=32 && old<40 &&  (old==_new-7 || old==_new-9) && _new<64 && _self.Pieces[_new-8].Type=="Pawn" && (parseInt(old/8)-parseInt(_new/8) ) ==-1 && lastMove.From == _new+8 && lastMove.To == _new-8 && lastMove.Piece.Color == "White" && lastMove.Piece.Type == "Pawn" && _self.Pieces[_new].Type==""){
+			if ( lastMove && this.Color=="Black" && old >=32 && old<40 &&  (old==_new-7 || old==_new-9) && _new<64 && _self.Pieces[_new-8].Type=="Pawn" && (parseInt(old/8)-parseInt(_new/8) ) ==-1 && lastMove.From == _new+8 && lastMove.To == _new-8 && lastMove.Piece.Color == "White" && lastMove.Piece.Type == "Pawn" && _self.Pieces[_new].Type==""){
 
 				console.log("EnPassant")
 				_self.removePiece(_new-8);
 				return true;
 
 			}
-			else if( this.Color=="White" && old >=24 && old<32 &&  (old==_new+7 || old==_new+9) && _new<64 && _self.Pieces[_new+8].Type=="Pawn" && (parseInt(old/8)-parseInt(_new/8) ) ==1 && lastMove.From == _new-8 && lastMove.To == _new+8 && lastMove.Piece.Color == "Black" && lastMove.Piece.Type == "Pawn" && _self.Pieces[_new].Type==""){
+			else if( lastMove && this.Color=="White" && old >=24 && old<32 &&  (old==_new+7 || old==_new+9) && _new<64 && _self.Pieces[_new+8].Type=="Pawn" && (parseInt(old/8)-parseInt(_new/8) ) ==1 && lastMove.From == _new-8 && lastMove.To == _new+8 && lastMove.Piece.Color == "Black" && lastMove.Piece.Type == "Pawn" && _self.Pieces[_new].Type==""){
 				_self.removePiece(_new+8);
 				console.log("EnPassant");
 			 	return true;
@@ -125,11 +138,17 @@ function MyChess(elemid,opts){
 					var b = _self.mychessmain.getElementsByClassName('message-main');
 					a[0].style.display = "block";
 					b[0].style.display = "block";
-					sqs[0].innerHTML = "<img draggable='true' src='./img/pcs/"+this.Color+"Queen.png' class='promote-pcs' pccolor="+this.Color+" pctype='Queen' style='width:"+parseInt(_self.Width/5)+"px;height:"+parseInt(_self.Width/5)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
-					sqs[1].innerHTML = "<img draggable='true' src='./img/pcs/"+this.Color+"Rook.png' class='promote-pcs' pccolor="+this.Color+" pctype='Rook' style='width:"+parseInt(_self.Width/5)+"px;height:"+parseInt(_self.Width/5)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
-					sqs[2].innerHTML = "<img draggable='true' src='./img/pcs/"+this.Color+"Bishop.png' class='promote-pcs' pccolor="+this.Color+" pctype='Bishop' style='width:"+parseInt(_self.Width/5)+"px;height:"+parseInt(_self.Width/5)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
-					sqs[3].innerHTML = "<img draggable='true' src='./img/pcs/"+this.Color+"Knight.png' class='promote-pcs' pccolor="+this.Color+" pctype='Knight' style='width:"+parseInt(_self.Width/5)+"px;height:"+parseInt(_self.Width/5)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
-						return true;
+					sqs[0].innerHTML = "<img src='./img/pcs/"+this.Color+"Queen.png' class='promote-pcs' pccolor="+this.Color+" pctype='Queen' style='width:"+parseInt(_self.Width/5)+"px;height:"+parseInt(_self.Width/5)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
+					sqs[1].innerHTML = "<img src='./img/pcs/"+this.Color+"Rook.png' class='promote-pcs' pccolor="+this.Color+" pctype='Rook' style='width:"+parseInt(_self.Width/5)+"px;height:"+parseInt(_self.Width/5)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
+					sqs[2].innerHTML = "<img src='./img/pcs/"+this.Color+"Bishop.png' class='promote-pcs' pccolor="+this.Color+" pctype='Bishop' style='width:"+parseInt(_self.Width/5)+"px;height:"+parseInt(_self.Width/5)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
+					sqs[3].innerHTML = "<img src='./img/pcs/"+this.Color+"Knight.png' class='promote-pcs' pccolor="+this.Color+" pctype='Knight' style='width:"+parseInt(_self.Width/5)+"px;height:"+parseInt(_self.Width/5)+"px;margin-left:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;margin-top:"+parseInt((_self.Width/8-_self.Width/10)/2)+"px;' />";
+
+					console.log("Pawn promotion")
+					_self.DOM._temp = this.SquareID;
+					_self.DOM._temp2 = _new;
+					_self.DOM.registerPromoteEvent();
+					return true;
+				
 				}
 				return false;
 		
@@ -139,8 +158,15 @@ function MyChess(elemid,opts){
 		MyChessPiece.apply(this,arguments);
 		this.Type = "Rook";
 		this.__construct();
-		this.isLegalMove = function(_new){
+		this.isLegalMove = function(_new,makeSqEmtpy){
 			var old = this.SquareID, r =true;
+			if(old==_new)return false;
+			if(_new<0 || _new >63)return false;
+			
+			if(!makeSqEmtpy || typeof makeSqEmtpy == "undefined")makeSqEmtpy=false;
+			//
+			if( (_self.Pieces[_new] && _self.Pieces[_new].Color == this.Color) && !makeSqEmtpy ) return false;
+
 			if( (old - _new)% 8 ==0 ){
 				if(old>_new){
 					for (var i=old-8; i > _new; i-=8) {
@@ -190,9 +216,14 @@ function MyChess(elemid,opts){
 		MyChessPiece.apply(this,arguments);
 		this.Type = "Knight";
 		this.__construct();
-		this.isLegalMove = function(_new){
-				var old = this.SquareID,dif = (old-_new);
-				return ( (dif == 10) || (dif == -10) ||
+		this.isLegalMove = function(_new,makeSqEmtpy){
+			var old = this.SquareID,dif = (old-_new);
+			if(old==_new)return false;
+			if(_new<0 || _new >63)return false;
+			if(!makeSqEmtpy || typeof makeSqEmtpy == "undefined")makeSqEmtpy=false;
+			//
+			if( (_self.Pieces[_new] && _self.Pieces[_new].Color == this.Color) && !makeSqEmtpy ) return false;
+			return ( (dif == 10) || (dif == -10) ||
 				(dif == 6) || (dif == -6) ||
 				(dif == 15) || (dif == -15) || 
 				(dif == 17) || (dif == -17) ) ;
@@ -202,8 +233,14 @@ function MyChess(elemid,opts){
 		MyChessPiece.apply(this,arguments);
 		this.Type = "Bishop";
 		this.__construct();
-		this.isLegalMove = function(_new){
+		this.isLegalMove = function(_new,makeSqEmtpy){
 			var r = true,old=this.SquareID;
+			if(old == _new) return false;
+			if(_new<0 || _new >63)return false;
+			if(!makeSqEmtpy || typeof makeSqEmtpy == "undefined")makeSqEmtpy=false;
+			//
+			if( (_self.Pieces[_new] && _self.Pieces[_new].Color == this.Color) && !makeSqEmtpy ) return false;
+
 			if( (old - _new) % 9 ==0 && _self.Pieces[_new].Element.getAttribute("sqcolor")==_self.Pieces[old].Element.getAttribute("sqcolor") ){
 				if(old>_new){
 					for (var i=old-9; i > _new; i-=9) {
@@ -251,7 +288,12 @@ function MyChess(elemid,opts){
 		MyChessRook.apply(this,arguments);
 		this.iLMR = this.isLegalMove;
 
-		this.isLegalMove = function(_new){
+		this.isLegalMove = function(_new,makeSqEmtpy){
+
+			if(!makeSqEmtpy || typeof makeSqEmtpy == "undefined")makeSqEmtpy=false;
+			//
+			if( (_self.Pieces[_new] && _self.Pieces[_new].Color == this.Color) && !makeSqEmtpy ) return false;
+
 			return (
 				this.iLMR(_new) ||
 				this.iLMB(_new) 
@@ -265,16 +307,32 @@ function MyChess(elemid,opts){
 		MyChessPiece.apply(this,arguments);
 		this.Type = "King";
 		this.__construct();
-		this.isLegalMove = function(_new){
+		this.isLegalMove = function(_new,makeSqEmtpy,kingMate){
 			var old = this.SquareID, dif = old- _new;
+			if(!makeSqEmtpy || typeof makeSqEmtpy == "undefined")makeSqEmtpy=false;
+			if(!kingMate || typeof kingMate == "undefined")kingMate=false;
 			//
+			if( (_self.Pieces[_new] && _self.Pieces[_new].Color == this.Color) && !makeSqEmtpy ) return false;
+			if(old==_new)return false;
+			if(_new<0 || _new >63)return false;
+			var _temp = _self.Pieces[_new].Type;
+			_self.Pieces[_new].Type = "King";
+			this.Type = "";
+			if(!kingMate && _self.Pieces[_new].isUnderAttack(this.Color)){
+				_self.Pieces[_new].Type = _temp;
+				this.Type = "King";
+				return false;
+			}
+			_self.Pieces[_new].Type = _temp;
+			this.Type = "King";
+			
 			return (
 				(dif==1) || (dif==-1) ||
 				(dif==7) || (dif==-7) ||
 				(dif==8) || (dif==-8) ||
 				(dif==9) || (dif==-9) 
 				|| this.isCastling(_new)
-				) && !this.isUnderAttack(this.Color)
+				) 
 		}
 		this.isCastling = function (_new){
 			var old = this.SquareID;
@@ -310,19 +368,20 @@ function MyChess(elemid,opts){
 	function MyChessGamePlay(){
 		this.playing = "White"; //who starts the game
 		this.Moves = []; //moves array.
-		this.Black = {
-			King:{}
-		}
-		this.White = {
-			King:{}
-		}
+		this.Black = new MyChessGamePlayer("Black");
+		this.White = new MyChessGamePlayer("White");
+
 		for (var i = 0; i < _self.Pieces.length; i++) {
 			_self.removePiece(i);
 			_self.Pieces[i] = new MyChessPiece({SquareID:i,Element:_self.Pieces[i].Element});
 		};
-
+		function MyChessGamePlayer(Color){
+			this.King = {};
+			this.Pieces = [];
+			this.Color = Color;
+		}
 		this.isCheckMate = function(){
-			var King = this[this.playing].King,
+			var King = this[this.playing].King,c,
 			possibleMoves = [King.SquareID+1,King.SquareID-1,King.SquareID+7,King.SquareID-7,King.SquareID+8,King.SquareID-8,King.SquareID+9,King.SquareID-9],
 			r = true;
 			for (var i = 0; i < possibleMoves.length; i++) {
@@ -331,7 +390,9 @@ function MyChess(elemid,opts){
 					break;
 				}
 			};
-			return r;
+
+			if(r && King.isUnderAttack(King.Color))return true;
+			return false;
 		}
 	}
 	function MyChessMove(opts){
@@ -340,14 +401,22 @@ function MyChess(elemid,opts){
 		this.To = opts.To;
 	}
 	function MyChessDOM(){
-		_self.mychessmain  = document.getElementById(elemid);
 		
+		_self.mychessmain  = document.getElementById(elemid);	
 		_self.mychessmain.classList.add("mychess-main");
-		_self.mychessmain.style.width = parseInt(_self.Width);
-		_self.mychessmain.style.height = parseInt(_self.Width);
+		
+		//
+		//
 		makeBoard();
 		_self.boardmain = _self.mychessmain.getElementsByClassName("board-main")[0];
+		_self.setWidth(_self.boardmain.clientWidth);
+		window.addEventListener("resize",resize,false);
 		_self.boardmain.addEventListener ("mousedown", OnMouseDown,false);
+
+		
+		function resize(){
+			_self.setWidth(_self.boardmain.clientWidth);
+		}
 		function makeBoard(){
 
 			var res = "<div class='board-main'>"; 
@@ -381,6 +450,30 @@ function MyChess(elemid,opts){
 					);
 				};
 		}
+
+		this.registerPromoteEvent = function(){
+			var prmtpcs = _self.mychessmain.getElementsByClassName("promote-pcs");
+			for (var i = 0; i < prmtpcs.length; i++) {
+			prmtpcs[i].addEventListener("click",makePromote,false);
+
+			};
+		}
+		function makePromote(e){
+			console.log ( e);
+			var opts = {
+				Color : e.target.getAttribute("pccolor"),
+				Type : e.target.getAttribute("pctype"),
+			}
+			_self.removePiece(_self.DOM._temp);
+			_self.putPiece(_self.DOM._temp2,opts.Type,opts.Color);
+			var a = _self.mychessmain.getElementsByClassName('board-promote');
+			var b = _self.mychessmain.getElementsByClassName('message-main');
+			a[0].style.display = "none";
+			b[0].style.display = "none";
+			if(_self.GamePlay.isCheckMate() ){
+    			console.log("CheckMate ! ! ");
+    		}
+		}
 	}
 	function MyChessDebug(){
 		var div = document.createElement('div');
@@ -393,6 +486,8 @@ function MyChess(elemid,opts){
 		
 		this.DOM = new MyChessDOM();
 		this.Debug = new MyChessDebug();
+		this._temp = null;
+		this._temp2 = null;
 		this.start();
 	}
 	this.start= function(){
@@ -402,11 +497,11 @@ function MyChess(elemid,opts){
 	this.setWidth = function(w){
 		_self.Width 
 		=  w 
-		= parseInt(w);
+		= ( w > window.innerHeight) ? window.innerHeight :parseInt(w) ;
 
-		_self.mychessmain.style.width 
-		= _self.mychessmain.style.height
-		= w+"px"; 
+		/*_self.boardmain.style.width 
+		= _self.boardmain.style.height
+		= w+"px"; */
 		var rows = _self.boardmain.getElementsByClassName("board-row"),
 		 	sqs  = _self.boardmain.getElementsByClassName("board-sq"),
 		 	pcs  = _self.boardmain.getElementsByClassName("board-pcs"),
@@ -598,6 +693,7 @@ function MyChess(elemid,opts){
 				return;
 			}
 		}
+		var _temp;
     	if(_self.Pieces[old].isLegalMove(_new)){
     		if(_self.Pieces[old].Type=="Pawn" ) {
 				_self.Pieces[old].isPromote(_new);
@@ -605,9 +701,13 @@ function MyChess(elemid,opts){
 
     		_self.Pieces[old].NeverMoved = false;
     		_self.moveCompleted(old,_new);
+    		_temp  = _self.Pieces[_new].Type;
+    		console.log("checking mate")
     		if(_self.GamePlay.isCheckMate() ){
     			console.log("CheckMate ! ! ");
+    			_self.Pieces[_new].Type = _temp
     		}
+    		_self.Pieces[_new].Type = _temp
     	}else{
     		_self.moveCanceled(e.target);
     	}
