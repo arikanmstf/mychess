@@ -20,8 +20,8 @@ function MyChess (elemid,opts) {
 				e.setAttribute("pctype",this.Type);
 				e.setAttribute("sqid",this.Square.SquareID);
 				e.classList.add("board-pcs");
-				e.style.width = parseInt(_self.Width/10)+"px";
-				e.style.height = parseInt(_self.Width/10)+"px";
+				e.style.width = parseInt(_self.DOM.BoardSize/10)+"px";
+				e.style.height = parseInt(_self.DOM.BoardSize/10)+"px";
 				e.style.marginLeft = parseInt((_self.DOM.BoardSize/8-_self.DOM.BoardSize/10)/2);
 				e.style.marginTop = parseInt((_self.DOM.BoardSize/8-_self.DOM.BoardSize/10)/2);
 				this.Element = e;
@@ -34,8 +34,14 @@ function MyChess (elemid,opts) {
 			console.info("Called abstract function PossibleMoves(); ");
 			return [];
 		}
-		this.isLegalMove = function(){ // return bool | true,false
-			console.info("Called abstract function isLegalMove(); ");
+		this.isLegalMove = function(_new){
+			var moves = this.PossibleMoves();
+			console.log(moves);
+			for (var i = 0; i < moves.length; i++) {
+				if(moves[i].To.ColNum  == _new[0] && moves[i].To.RowName == _new[1]) {
+					return moves[i];
+				}
+			};
 			return false;
 		}
 
@@ -56,25 +62,25 @@ function MyChess (elemid,opts) {
 				res = [];
 			
 			if( this.Color == "White" ){
-				if(_self.GamePlay.Squares[col][row+1].Piece.Type == ""){
+				if( row <8 && _self.GamePlay.Squares[col][row+1].Piece.Type == ""){
 					res.push( new MyChess.GamePlay.Move({
 						From : this.Square,
 						To : _self.GamePlay.Squares[col][row+1]
 					}));
-					if (_self.GamePlay.Squares[col][row+2].Piece.Type == "" && this.Square.RowName ==2) {
+					if (row < 7 && _self.GamePlay.Squares[col][row+2].Piece.Type == "" && this.Square.RowName ==2) {
 						res.push( new MyChess.GamePlay.Move({
 							From : this.Square,
 							To : _self.GamePlay.Squares[col][row+2]
 						}));
 					};
 				}
-				if(_self.GamePlay.Squares[col-1][row+1].Piece.Color == "Black"){
+				if( col > 1  && row < 8 && _self.GamePlay.Squares[col-1][row+1].Piece.Color == "Black"){
 					res.push( new MyChess.GamePlay.Move({
 						From : this.Square,
 						To : _self.GamePlay.Squares[col-1][row+1]
 					}));
 				}
-				if(_self.GamePlay.Squares[col+1][row+1].Piece.Color == "Black"){
+				if(col < 8 && row < 8 && _self.GamePlay.Squares[col+1][row+1].Piece.Color == "Black"){
 						res.push( new MyChess.GamePlay.Move({
 						From : this.Square,
 						To : _self.GamePlay.Squares[col+1][row+1]
@@ -82,25 +88,25 @@ function MyChess (elemid,opts) {
 				}
 			}
 			else if (this.Color == "Black"){
-				if(_self.GamePlay.Squares[col][row-1].Piece.Type == ""){
+				if(row > 1 && _self.GamePlay.Squares[col][row-1].Piece.Type == ""){
 					res.push( new MyChess.GamePlay.Move({
 						From : this.Square,
 						To : _self.GamePlay.Squares[col][row-1]
 					}));
-					if (_self.GamePlay.Squares[col][row-2].Piece.Type == "" && this.Square.RowName ==7) {
+					if (row > 2 && _self.GamePlay.Squares[col][row-2].Piece.Type == "" && this.Square.RowName ==7) {
 						res.push( new MyChess.GamePlay.Move({
 							From : this.Square,
 							To : _self.GamePlay.Squares[col][row-2]
 						}));
 					};
 				}
-				if(_self.GamePlay.Squares[col-1][row-1].Piece.Color == "White"){
+				if(col > 1 && row > 1 && _self.GamePlay.Squares[col-1][row-1].Piece.Color == "White"){
 					res.push( new MyChess.GamePlay.Move({
 						From : this.Square,
 						To : _self.GamePlay.Squares[col-1][row-1]
 					}));
 				}
-				if(_self.GamePlay.Squares[col+1][row-1].Piece.Color == "White"){
+				if( col < 8 && row > 1 && _self.GamePlay.Squares[col+1][row-1].Piece.Color == "White"){
 						res.push( new MyChess.GamePlay.Move({
 						From : this.Square,
 						To : _self.GamePlay.Squares[col+1][row-1]
@@ -109,15 +115,7 @@ function MyChess (elemid,opts) {
 			}
 			return res;
 		}
-		this.isLegalMove = function(_new){
-			var moves = this.PossibleMoves();
-			for (var i = 0; i < moves.length; i++) {
-				if(moves[i].To.ColNum  == _new[0] && moves[i].To.RowName == _new[1]) {
-					return moves[i];
-				}
-			};
-			return false;
-		}
+		
 
 	}
 	MyChess.Piece.Rook = function(opts){
@@ -129,6 +127,79 @@ function MyChess (elemid,opts) {
 		MyChess.Piece.apply(this,arguments); // extends MyChess.Piece
 		this.Type = "Knight";
 		this.__construct();
+		this.PossibleMoves = function () {
+			var col = this.Square.ColNum ,
+				row = this.Square.RowName, 
+				SquareID = this.Square.SquareID,
+				res = [];
+
+			if(col<8){
+
+				if(col < 7){
+					if(row > 1){
+						res.push( new MyChess.GamePlay.Move({
+							From : this.Square,
+							To : _self.GamePlay.Squares[col+2][row-1]
+						}));
+					}
+					if(row < 8){
+						res.push( new MyChess.GamePlay.Move({
+							From : this.Square,
+							To : _self.GamePlay.Squares[col+2][row+1]
+						}));
+					}
+				}
+				if(row <7){
+					res.push( new MyChess.GamePlay.Move({
+								From : this.Square,
+								To : _self.GamePlay.Squares[col+1][row+2]
+							}));
+				}
+				if(row > 2 ){
+
+					res.push( new MyChess.GamePlay.Move({
+								From : this.Square,
+								To : _self.GamePlay.Squares[col+1][row-2]
+							}));
+				}
+			}
+			if(col > 1){
+
+
+				if(row > 2){
+
+					res.push( new MyChess.GamePlay.Move({
+							From : this.Square,
+							To : _self.GamePlay.Squares[col-1][row-2]
+						}));
+				}
+				if(row < 7){
+
+					res.push( new MyChess.GamePlay.Move({
+								From : this.Square,
+								To : _self.GamePlay.Squares[col-1][row+2]
+							}));
+				}
+				if(col > 2){
+
+					if(row >1){
+
+						res.push( new MyChess.GamePlay.Move({
+									From : this.Square,
+									To : _self.GamePlay.Squares[col-2][row-1]
+								}));
+					}
+					if(row <8){
+
+						res.push( new MyChess.GamePlay.Move({
+									From : this.Square,
+									To : _self.GamePlay.Squares[col-2][row+1]
+								}));
+					}
+				}
+			}
+			return res;
+		}
 	}
 	MyChess.Piece.Bishop = function(opts){
 		MyChess.Piece.apply(this,arguments); // extends MyChess.Piece
@@ -404,6 +475,28 @@ function MyChess (elemid,opts) {
 			res += '<div class="message-main" style="display:none;"><div class="message-cover"</div></div>';*/
 			
 		}
+		this.setSize = function(size){
+			this.BoardSize = size;
+			var rows = this.BoardMain.getElementsByClassName('board-row');
+			for (var i = 0; i < rows.length; i++) {
+				rows[i].style.width = this.BoardSize + "px";
+				rows[i].style.height = this.BoardSize/8 + "px";
+			}
+
+			var sqs = this.BoardMain.getElementsByClassName('board-sq');
+			for (var i = 0; i < sqs.length; i++) {
+				sqs[i].style.width = this.BoardSize/8 + "px";
+				sqs[i].style.height = this.BoardSize/8 + "px";
+			}
+
+			var pcs = this.BoardMain.getElementsByClassName('board-pcs');
+			for (var i = 0; i < pcs.length; i++) {
+				pcs[i].style.width = parseInt(_self.DOM.BoardSize/10)+"px";
+				pcs[i].style.height = parseInt(_self.DOM.BoardSize/10)+"px";
+				pcs[i].style.marginLeft = parseInt((_self.DOM.BoardSize/8-_self.DOM.BoardSize/10)/2);
+				pcs[i].style.marginTop = parseInt((_self.DOM.BoardSize/8-_self.DOM.BoardSize/10)/2);
+			}
+		}
 
 		/* end of public functions */
 
@@ -413,7 +506,7 @@ function MyChess (elemid,opts) {
 
 		/* construct*/
 		this.Element = document.getElementById(elemid); //HTMLDOMObject
-		this.DefaultSize = 400; // Integer
+		this.DefaultSize = this.Element.offsetWidth; // Integer
 		this.BoardSize = opts && opts.BoardSize ? opts.BoardSize : this.DefaultSize; // Integer
 		this.Element.classList.add("mychess-main");
 		this.MakeBoard();
@@ -429,8 +522,11 @@ function MyChess (elemid,opts) {
 	/* public functions */
 	this.init = function(){
 		this.GamePlay = new MyChess.GamePlay();
-		this.DOM = new MyChess.DOM(_self.elemid);
+		this.DOM = new MyChess.DOM(_self.elemid,opts);
 		this.GamePlay.StartGame();
+	}
+	this.setSize = function (size) {
+		this.DOM.setSize(size);
 	}
 
 	/* end of public functions */

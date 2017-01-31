@@ -8,11 +8,24 @@
 	<script type="text/javascript">
 		var mc;
 		function init () {
-			mc = new MyChess("mychess-board",{width:500});
+			mc = new MyChess("mychess-board",{});
 		}
 	</script>
+	<style type="text/css">
+		
+		.col-md-6{
+			width: 50%;
+		}
+		@media screen and (max-width: 768px) and (min-width: 260px) {
+			.col-md-6{
+				width: 100%;
+			}
+		}
+	</style>
 </head>
 <body onload="init();">
-	<div id="mychess-board"></div>
+	<div class="col-md-6">
+		<div id="mychess-board"></div>
+	</div>
 </body>
 </html>
