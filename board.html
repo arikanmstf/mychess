@@ -8,7 +8,12 @@
 	<script type="text/javascript">
 		var mc;
 		function init () {
-			mc = new MyChess("mychess-board",{});
+			mc = new MyChess("mychess-board",{
+				/* Default Options */
+				// BoardSize : 400
+				// AutoSize : true
+				 ShowPossibleMoves : true
+			});
 		}
 	</script>
 	<style type="text/css">
@@ -24,8 +29,7 @@
 	</style>
 </head>
 <body onload="init();">
-	<div class="col-md-6">
+	
 		<div id="mychess-board"></div>
-	</div>
 </body>
 </html>

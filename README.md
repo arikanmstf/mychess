@@ -11,8 +11,6 @@ var mc = new MyChess("mychess-board",{
 	BoardSize:300
 });
 
-//to reset the board to startposition
-mc.start();
 
 //to set size of the board, use setSize(); , default Size 100%	;
 mc.setSize(700);

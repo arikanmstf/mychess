@@ -1,8 +1,7 @@
 body{background-color: #b1b1b1;padding: 0px;margin:0px;}
 .mychess-main,.mychess-main > .board-main{position: relative;}
-.mychess-main{width: 100%;height: 100%; padding: 10px;-moz-box-sizing: border-box;-webkit-box-sizing: border-box; box-sizing: border-box;}
-.mychess-main > .board-main{width: 70%;}
-.mychess-main > .board-main >.board-row > .board-sq {width:50px;height:50px;float: left;position: relative;	}
+.mychess-main{width: 100%;height: 100%;}
+.mychess-main > .board-main >.board-row > .board-sq {width:50px;height:50px;float: left;position: relative;	box-sizing: border-box;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;border: 1px solid #8a8a8a;}
 .mychess-main > .board-main >.board-row{width: 400px;
 	height: 50px;position: relative;}
 .mychess-main > .board-main >.board-row	 > .board-sq > img.board-pcs , .mychess-main > .board-main >.board-promote > .promote-sq > img.promote-pcs{width: 40px;height: 40px;margin-left: 5px;margin-top: 5px;position: relative;cursor: pointer;}
@@ -10,6 +9,8 @@ body{background-color: #b1b1b1;padding: 0px;margin:0px;}
 .mychess-main > .board-main >.board-row > .board-sq.light:hover,.board-main >.board-row > .board-sq.light.hover{background-color: #e1e877;}
 .mychess-main > .board-main >.board-row > .board-sq.dark , .mychess-main > .board-main >.board-promote > .promote-sq.dark{background-color: #306b7d; /* #247328; */}
 .mychess-main > .board-main >.board-row > .board-sq.dark:hover,.board-main >.board-row > .board-sq.dark.hover{background-color: #48a0bb; /* #97dc6b; */}
+.mychess-main > .board-main >.board-row > .board-sq.selected{background-color: #1bab56;}
+.mychess-main > .board-main >.board-row > .board-sq.possible{background-color: #42d47e;}
 .mychess-main > .board-main > .board-promote{width: 200px;height: 200px;position: absolute;left: 100px;top:100px;
 	z-index: 1200;}
 .mychess-main > .message-main > .message-cover{position: absolute;width: 100%;height: 100%;background-color: #000;opacity: .5;left: 0;
