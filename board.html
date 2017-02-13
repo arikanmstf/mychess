@@ -1,7 +1,8 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=0"> 
+
 	<link rel="shortcut icon" href="./img/pcs/WhitePawn.png" type="image/x-icon">
 	<link rel="stylesheet" type="text/css" href="./mychess.css">
 	<script type="text/javascript" src="./mychess.js"></script>
@@ -11,13 +12,15 @@
 			mc = new MyChess("mychess-board",{
 				/* Default Options */
 				// BoardSize : 400
-				// AutoSize : true
-				 ShowPossibleMoves : true
+				// AutoSize : true,
+				ShowPossibleMoves : true,
+				DragEvent : true
+				//ClickEvent : false
+
 			});
 		}
 	</script>
 	<style type="text/css">
-		
 		.col-md-6{
 			width: 50%;
 		}
