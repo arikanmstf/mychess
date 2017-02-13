@@ -1,7 +1,6 @@
 function MyChess (elemid,opts) {
 	var _self = this;
 	_self . elemid = elemid; 
-
 	/* child classes */
 	MyChess.Piece = function(opts) {
 		this.Color = opts && opts.Color ? opts.Color : ""; // String | White,Black
