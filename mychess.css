@@ -5,6 +5,10 @@ body{background-color: #b1b1b1;padding: 0px;margin:0px;}
 .mychess-main > .board-main >.board-row{width: 400px;
 	height: 50px;position: relative;}
 .mychess-main > .board-main >.board-row	 > .board-sq > img.board-pcs , .mychess-main > .board-main >.board-promote > .promote-sq > img.promote-pcs{width: 40px;height: 40px;margin-left: 5px;margin-top: 5px;position: relative;cursor: pointer;}
+.mychess-main > .board-main >.board-row	 > .board-sq > span.col{position: absolute;right: 5px;bottom: 5px;}
+.mychess-main > .board-main >.board-row	 > .board-sq > span.row{position: absolute;top: 5px;left: 5px;}
+.mychess-main > .board-main >.board-row	 > .board-sq.light > span{color: #111;}
+.mychess-main > .board-main >.board-row	 > .board-sq.dark > span{color: #eee;}
 .mychess-main > .board-main >.board-row > .board-sq.light , .mychess-main > .board-main >.board-promote > .promote-sq.light{background-color: #efefef;}
 .mychess-main > .board-main >.board-row > .board-sq.light:hover,.board-main >.board-row > .board-sq.light.hover{background-color: #e1e877;}
 .mychess-main > .board-main >.board-row > .board-sq.dark , .mychess-main > .board-main >.board-promote > .promote-sq.dark{background-color: #306b7d; /* #247328; */}
