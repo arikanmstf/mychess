@@ -4,22 +4,23 @@ body{background-color: #b1b1b1;padding: 0px;margin:0px;}
 .mychess-main > .board-main >.board-row > .board-sq {width:50px;height:50px;float: left;position: relative;	box-sizing: border-box;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;border: 1px solid #8a8a8a;}
 .mychess-main > .board-main >.board-row{width: 400px;
 	height: 50px;position: relative;}
-.mychess-main > .board-main >.board-row	 > .board-sq > img.board-pcs , .mychess-main > .board-main >.board-promote > .promote-sq > img.promote-pcs{width: 40px;height: 40px;margin-left: 5px;margin-top: 5px;position: relative;cursor: pointer;}
+.mychess-main > .board-main >.board-row	 > .board-sq > img.board-pcs , .mychess-main > .promote-modal > .board-promote > .promote-sq > img.promote-pcs{width: 40px;height: 40px;margin-left: 5px;margin-top: 5px;position: relative;cursor: pointer;}
 .mychess-main > .board-main >.board-row	 > .board-sq > span.col{position: absolute;right: 5px;bottom: 5px;}
 .mychess-main > .board-main >.board-row	 > .board-sq > span.row{position: absolute;top: 5px;left: 5px;}
 .mychess-main > .board-main >.board-row	 > .board-sq.light > span{color: #111;}
 .mychess-main > .board-main >.board-row	 > .board-sq.dark > span{color: #eee;}
-.mychess-main > .board-main >.board-row > .board-sq.light , .mychess-main > .board-main >.board-promote > .promote-sq.light{background-color: #efefef;}
+.mychess-main > .board-main >.board-row > .board-sq.light , .mychess-main > .promote-modal > .board-promote > .promote-sq.light{background-color: #efefef;}
 .mychess-main > .board-main >.board-row > .board-sq.light:hover,.board-main >.board-row > .board-sq.light.hover{background-color: #e1e877;}
-.mychess-main > .board-main >.board-row > .board-sq.dark , .mychess-main > .board-main >.board-promote > .promote-sq.dark{background-color: #306b7d; /* #247328; */}
+.mychess-main > .board-main >.board-row > .board-sq.dark , .mychess-main > .promote-modal > .board-promote > .promote-sq.dark{background-color: #306b7d; /* #247328; */}
+.mychess-main > .promote-modal{position: absolute;left: 0px;top: 0px;background-color: rgba(0,0,0,.5);z-index: 10001}
 .mychess-main > .board-main >.board-row > .board-sq.dark:hover,.board-main >.board-row > .board-sq.dark.hover{background-color: #48a0bb; /* #97dc6b; */}
 .mychess-main > .board-main >.board-row > .board-sq.selected{background-color: #1bab56;}
 .mychess-main > .board-main >.board-row > .board-sq.possible{background-color: #42d47e;}
-.mychess-main > .board-main > .board-promote{width: 200px;height: 200px;position: absolute;left: 100px;top:100px;
+.mychess-main >  .promote-modal > .board-promote{width: 200px;height: 200px;left: 100px;top:100px;
 	z-index: 1200;}
 .mychess-main > .message-main > .message-cover{position: absolute;width: 100%;height: 100%;background-color: #000;opacity: .5;left: 0;
 	top: 0;	z-index: 1100;}
-.mychess-main > .board-main >.board-promote > .promote-sq{width:100px;height:100px;float: left;position: relative;cursor: pointer;}
+.mychess-main > .promote-modal > .board-promote > .promote-sq{width:100px;height:100px;float: left;position: relative;cursor: pointer;}
 @media screen and (max-width: 768px) and (min-width: 260px) {
     .mychess-main .board-main{width: 100%;}
 }

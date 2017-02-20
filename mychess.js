@@ -1,3 +1,4 @@
+Array.prototype.last = function(){ return this.length >0 ? this[this.length-1] : false;}
 function MyChess (elemid,opts) {
 	var _self = this;
 	_self . elemid = elemid; 
@@ -28,6 +29,28 @@ function MyChess (elemid,opts) {
 				this.Element = e;
 				if(this.Square)this.Square.Element.appendChild(e);
 			}
+		}
+		this.clone = function(){
+			var opts = {
+				Color : this.Color,
+				Square:this.Square,
+				Symbol:this.Symbol
+			}
+
+			var r ;
+			switch(this.Type){
+				case "Pawn" : r = new MyChess.Piece.Pawn(opts);break;
+				case "Rook" : r = new MyChess.Piece.Rook(opts);break;
+				case "Knight" : r = new MyChess.Piece.Knight(opts);break;
+				case "Bishop" : r = new MyChess.Piece.Bishop(opts);break;
+				case "Queen" : r = new MyChess.Piece.Queen(opts);break;
+				case "King" : r = new MyChess.Piece.King(opts);break;
+				default : r = new MyChess.Piece(opts);break;
+			}
+			r.Element = this.Element;
+			r.NeverMoved = this.NeverMoved;
+			r.Alive = this.Alive;
+			return r;
 		}
 		this.isInDanger = function(){
 			var col = this.Square.ColNum ,
@@ -61,17 +84,18 @@ function MyChess (elemid,opts) {
 			for (var i = 0; i < res.length; i++) {
 
 				_tempToPiece = res[i].To.Piece ;
+				_tempSta = _tempToPiece.Alive;
 				_tempToPiece.Alive = false;
 				res[i].From.Piece.Square = res[i].To;
 				res[i].To.Piece = res[i].From.Piece;
 				res[i].From.Piece = new MyChess.Piece({Type:"",Color:"",Square:res[i].From});
 				if(King.isInDanger()){
-					_tempToPiece.Alive = true;
+					_tempToPiece.Alive = _tempSta;
 					res[i].From.Piece = res[i].To.Piece;
 					res[i].To.Piece = _tempToPiece;
 					res[i].From.Piece.Square = res[i].From; 
 				}else{
-					_tempToPiece.Alive = true;
+					_tempToPiece.Alive = _tempSta;
 					res[i].From.Piece = res[i].To.Piece;
 					res[i].To.Piece = _tempToPiece;
 					res[i].From.Piece.Square = res[i].From;
@@ -117,7 +141,8 @@ function MyChess (elemid,opts) {
 				if( row <8 && _self.GamePlay.Squares[col][row+1].Piece.Type == ""){
 					res.push( new MyChess.GamePlay.Move({
 						From : this.Square,
-						To : _self.GamePlay.Squares[col][row+1]
+						To : _self.GamePlay.Squares[col][row+1],
+						Special : (row == 7) ? "WhitePromote" : false
 					}));
 					if (row < 7 && _self.GamePlay.Squares[col][row+2].Piece.Type == "" && this.Square.RowName ==2) {
 						res.push( new MyChess.GamePlay.Move({
@@ -129,13 +154,15 @@ function MyChess (elemid,opts) {
 				if( col > 1  && row < 8 && _self.GamePlay.Squares[col-1][row+1].Piece.Color == "Black"){
 					res.push( new MyChess.GamePlay.Move({
 						From : this.Square,
-						To : _self.GamePlay.Squares[col-1][row+1]
+						To : _self.GamePlay.Squares[col-1][row+1],
+						Special : (row == 7) ? "WhitePromote" : false
 					}));
 				}
 				if(col < 8 && row < 8 && _self.GamePlay.Squares[col+1][row+1].Piece.Color == "Black"){
 						res.push( new MyChess.GamePlay.Move({
 						From : this.Square,
-						To : _self.GamePlay.Squares[col+1][row+1]
+						To : _self.GamePlay.Squares[col+1][row+1],
+						Special : (row == 7) ? "WhitePromote" : false
 					}));
 				}
 			}
@@ -143,7 +170,8 @@ function MyChess (elemid,opts) {
 				if(row > 1 && _self.GamePlay.Squares[col][row-1].Piece.Type == ""){
 					res.push( new MyChess.GamePlay.Move({
 						From : this.Square,
-						To : _self.GamePlay.Squares[col][row-1]
+						To : _self.GamePlay.Squares[col][row-1],
+						Special : (row == 2) ? "BlackPromote" : false
 					}));
 					if (row > 2 && _self.GamePlay.Squares[col][row-2].Piece.Type == "" && this.Square.RowName ==7) {
 						res.push( new MyChess.GamePlay.Move({
@@ -155,14 +183,50 @@ function MyChess (elemid,opts) {
 				if(col > 1 && row > 1 && _self.GamePlay.Squares[col-1][row-1].Piece.Color == "White"){
 					res.push( new MyChess.GamePlay.Move({
 						From : this.Square,
-						To : _self.GamePlay.Squares[col-1][row-1]
+						To : _self.GamePlay.Squares[col-1][row-1],
+						Special : (row == 2) ? "BlackPromote" : false
 					}));
 				}
 				if( col < 8 && row > 1 && _self.GamePlay.Squares[col+1][row-1].Piece.Color == "White"){
 						res.push( new MyChess.GamePlay.Move({
 						From : this.Square,
-						To : _self.GamePlay.Squares[col+1][row-1]
+						To : _self.GamePlay.Squares[col+1][row-1],
+						Special : (row == 2) ? "BlackPromote" : false
 					}));
+				}
+			}
+			var ep = this.EnPassantMoves();
+			return res.concat(ep);
+		}
+		this.EnPassantMoves = function(){
+			var col = this.Square.ColNum ,
+				row = this.Square.RowName, 
+				SquareID = this.Square.SquareID,
+				res = [],
+				lastMove = _self.GamePlay.Moves.last();
+			if(this.Color == "White"){
+				if(row == 5){
+					if(lastMove && lastMove.To.Piece.Color == "Black" && lastMove.To.Piece.Type == "Pawn"){
+						if(lastMove.To.RowName == row && lastMove.From.RowName == 7 && (lastMove.To.ColNum == col-1 || lastMove.To.ColNum == col+1 ) ){
+							res.push( new MyChess.GamePlay.Move({
+								From : this.Square,
+								To : _self.GamePlay.Squares[lastMove.To.ColNum][row+1],
+								Special: "WhiteEnPassant"
+							}));
+						}
+					}
+				}
+			}else{
+				if(row==4){
+					if(lastMove && lastMove.To.Piece.Color == "White" && lastMove.To.Piece.Type == "Pawn"){
+						if(lastMove.To.RowName == row && lastMove.From.RowName == 2 && (lastMove.To.ColNum == col-1 || lastMove.To.ColNum == col+1 ) ){
+							res.push( new MyChess.GamePlay.Move({
+								From : this.Square,
+								To : _self.GamePlay.Squares[lastMove.To.ColNum][row-1],
+								Special:"BlackEnPassant"
+							}));
+						}
+					}
 				}
 			}
 			return res;
@@ -734,12 +798,13 @@ function MyChess (elemid,opts) {
 			this.addPiece("g8","Knight","Black");
 			this.addPiece("h8","Rook","Black");
 			for (var i = 8; i < 16; i++) {
-				//this.addPiece(i,"Pawn","Black");
+				this.addPiece(i,"Pawn","Black");
 			};
-
+			this.addPiece("b2","Pawn","Black");
+			this.addPiece("b7","Pawn","White");
 			this.addPiece(56,"Rook","White");
 			this.addPiece(63,"Rook","White");
-			this.addPiece("c7","Knight","White");
+			this.addPiece(57,"Knight","White");
 			this.addPiece(62,"Knight","White");
 			this.addPiece(58,"Bishop","White");
 			this.addPiece(61,"Bishop","White");
@@ -775,7 +840,19 @@ function MyChess (elemid,opts) {
 
 		}
 		this.checkMove = function(old,_new){
-			var old = getSQ(old),_new = getSQ(_new),
+
+			var old = getSQ(old),_new = getSQ(_new),m;
+
+			if(this.Squares[old[0]][old[1]].Piece.Color != this.Playing && this.Playing != "Both"){
+				this.moveDenied(old);
+				return false;
+			}
+
+			if(this.Squares[old[0]][old[1]].Piece.Color != this.WhoIsNext){
+				this.moveDenied(old);
+				return false;
+			}
+
 			m = this.Squares[old[0]][old[1]].Piece.isLegalMove(_new);
 			if(m){
 				this.moveConfirmed(m);
@@ -783,10 +860,32 @@ function MyChess (elemid,opts) {
 				this.moveDenied(old);
 			}
 		}
+		this.ShowPawnPromote = function(color){
+
+			var sqs = _self.DOM.Element.ModalPromote.getElementsByClassName("promote-sq "),
+			types = ["Queen","Rook","Bishop","Knight"];
+
+			for (var i = 0; i < types.length; i++) {
+				var q = document.createElement("img");
+				q.src = "./img/pcs/"+color+types[i]+".png";
+				q.setAttribute("pctype",types[i]);
+				q.classList.add("board-pcs");
+				q.style.width = parseInt(_self.DOM.BoardSize/8)+"px";
+				q.style.height = parseInt(_self.DOM.BoardSize/8)+"px";
+				q.style.marginLeft = parseInt(_self.DOM.BoardSize/16)+"px";
+				q.style.marginTop = parseInt(_self.DOM.BoardSize/16)+"px";
+				sqs[i].appendChild(q);
+			};
+
+			_self.DOM.Element.ModalPromote.style.display = "block";
+		}
+
 		this.moveConfirmed = function(m){
 			// HTML
 			this.Moves.push(m);
 			m.MoveNumber = this.Moves.length;
+			if(this.WhoIsNext == "White")this.WhoIsNext = "Black";
+			else this.WhoIsNext = "White";
 
 			switch (m.Special){
 
@@ -826,6 +925,25 @@ function MyChess (elemid,opts) {
 						this.Squares[1][1].Piece = new MyChess.Piece({Type:"",Color:"",Square:56});
 					break;
 
+				case 'WhiteEnPassant' :
+						this.Squares[m.To.ColNum][m.To.RowName-1].Element.removeChild (this.Squares[m.To.ColNum][m.To.RowName-1].Piece.Element);
+						this.Squares[m.To.ColNum][m.To.RowName-1].Piece.Alive = false;
+						this.Squares[m.To.ColNum][m.To.RowName-1].Piece = new MyChess.Pieceeak;
+				case 'BlackEnPassant' :
+						this.Squares[m.To.ColNum][m.To.RowName+1].Element.removeChild (this.Squares[m.To.ColNum][m.To.RowName+1].Piece.Element);
+						this.Squares[m.To.ColNum][m.To.RowName+1].Piece.Alive = false;
+						this.Squares[m.To.ColNum][m.To.RowName+1].Piece = new MyChess.Piece({Type:"",Color:"",Square:m.To.SquareID-8});
+					break;
+				case 'WhitePromote' :
+						_self.tempPawn = m.From.Piece.clone();
+						console.log(_self.tempPawn)
+						this.ShowPawnPromote("White");
+					break;
+				case 'BlackPromote' :
+						_self.tempPawn = m.From.Piece; 
+						this.ShowPawnPromote("Black");
+					break;
+
 			}
 
 			m.From.Piece.Element.style.left =0+"px";
@@ -838,6 +956,7 @@ function MyChess (elemid,opts) {
 				m.To.Element.removeChild (m.To.Piece.Element);
 			}
 			//
+			m.To.Piece.Alive = false;
 			m.From.Piece.NeverMoved = false;
 			m.From.Piece.Square = m.To;
 			m.To.Piece = m.From.Piece;
@@ -874,8 +993,11 @@ function MyChess (elemid,opts) {
 			Black : new MyChess.GamePlay.Player("Black")
 
 		} ;
+
 		this.Moves = [] ; // Array contains MyChess.GamePlay.Move
 		this.Squares = new MyChess.Squares(); // Array contains MyChess.Square
+		this.Playing =  (opts && typeof opts.Playing != "undefined" ) ? opts.Playing : "White";
+		this.WhoIsNext =  (opts && typeof opts.WhoIsNext != "undefined" ) ? opts.WhoIsNext : "White";
 	}
 	MyChess.DOM = function(elemid,opts){
 		
@@ -955,6 +1077,15 @@ function MyChess (elemid,opts) {
 			function makeNumber(v){
 		    	var n = parseInt(v);
 				return n == null || isNaN(n) ? 0 : n;
+			}
+		}
+		MyChess.DOM.ClickPawnPromote = function(element){
+			var Element = element,
+			_s = this,pawn = _self.tempPawn;
+			Element.addEventListener("click",OnClick,false);
+
+			function OnClick(e){
+				console.log(pawn);
 			}
 		}
 
@@ -1045,6 +1176,7 @@ function MyChess (elemid,opts) {
 					d.classList.add("board-sq");
 					d.style.width =parseInt(this.BoardSize/8)+"px";
 					d.style.height =parseInt(this.BoardSize/8)+"px";
+
 					c.classList.add("col");
 					r.classList.add("row");
 					
@@ -1096,11 +1228,61 @@ function MyChess (elemid,opts) {
 				};
 				m.appendChild(row);
 			};
+			m.style.fontSize =parseInt( this.BoardSize/48<18 ? this.BoardSize/48 : 18 )+"px";
+
+			var prom = document.createElement("div"),promsq1,promsq2,promsq3,promsq4,modal;
+			prom.classList.add("board-promote");
+			
 			this.Element.appendChild (m);
 			this.BoardMain = m;
-			/*res += '<div class="board-promote" style="width:'+parseInt(this.BoardSize/2)+'px;height:'+parseInt(this.BoardSize/2)+'px;left:'+parseInt(this.BoardSize/4)+'px;top:'+parseInt(this.BoardSize/4)+'px;display:none;"><div class="promote-sq light" style="width:'+parseInt(this.BoardSize/4)+'px;height:'+parseInt(this.BoardSize/4)+'px"></div><div class="promote-sq dark" style="width:'+parseInt(this.BoardSize/4)+'px;height:'+parseInt(this.BoardSize/4)+'px"></div><div class="promote-sq dark" style="width:'+parseInt(this.BoardSize/4)+'px;height:'+parseInt(this.BoardSize/4)+'px"></div><div class="promote-sq light" style="width:'+parseInt(this.BoardSize/4)+'px;height:'+parseInt(this.BoardSize/4)+'px"></div></div>';
-			res += '</div>';
-			res += '<div class="message-main" style="display:none;"><div class="message-cover"</div></div>';*/
+			
+			this.setSize(this.BoardSize);
+
+			modal = document.createElement("div");
+			modal.classList.add("promote-modal");
+			modal.style.width = parseInt(this.BoardSize)+"px";
+			modal.style.height = parseInt(this.BoardSize)+"px";
+			modal.style.display = "none";
+
+			prom.style.width = parseInt(this.BoardSize/2)+"px";
+			prom.style.height = parseInt(this.BoardSize/2)+"px";
+			prom.style.marginLeft = parseInt( (this.BoardSize /4)+2 )+"px";
+			prom.style.marginTop = parseInt( (this.BoardSize/4)+2  )+"px";
+			//prom.style.display=none;
+
+			promsq1 = document.createElement("div");
+			promsq1.classList.add("promote-sq");
+			promsq1.classList.add("light");
+			promsq1.style.width = parseInt(this.BoardSize/4)+"px";
+			promsq1.style.height = parseInt(this.BoardSize/4)+"px";
+
+			promsq2 = document.createElement("div");
+			promsq2.classList.add("promote-sq");
+			promsq2.classList.add("dark");
+			promsq2.style.width = parseInt(this.BoardSize/4)+"px";
+			promsq2.style.height = parseInt(this.BoardSize/4)+"px";
+
+			promsq3 = document.createElement("div");
+			promsq3.classList.add("promote-sq");
+			promsq3.classList.add("dark");
+			promsq3.style.width = parseInt(this.BoardSize/4)+"px";
+			promsq3.style.height = parseInt(this.BoardSize/4)+"px";
+
+			promsq4 = document.createElement("div");
+			promsq4.classList.add("promote-sq");
+			promsq4.classList.add("light");
+			promsq4.style.width = parseInt(this.BoardSize/4)+"px";
+			promsq4.style.height = parseInt(this.BoardSize/4)+"px";
+
+			prom.appendChild(promsq1);
+			prom.appendChild(promsq2);
+			prom.appendChild(promsq3);
+			prom.appendChild(promsq4);
+			modal.appendChild(prom);
+
+			this.Element.ModalPromote = modal;
+			this.Element.ModalPromote.BoardPromote = prom;
+			this.Element.appendChild(modal);
 			
 		}
 		this.setSize = function(size){
@@ -1152,7 +1334,7 @@ function MyChess (elemid,opts) {
 		if(this.DragEvent)this.Drag = new MyChess.DOM.Drag(this.BoardMain);
 		if(this.ClickEvent)this.Click = new MyChess.DOM.Click(this.BoardMain);
 		this.setSize(this.BoardSize);
-		
+		this.PawnPromoteEvent = new MyChess.DOM.ClickPawnPromote(this.Element.ModalPromote.BoardPromote);
 	}
 	MyChess.Log = function(){
 

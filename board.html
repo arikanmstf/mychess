@@ -13,11 +13,13 @@
 				/* Default Options */
 				// BoardSize : 400
 				// AutoSize : true,
-				ShowPossibleMoves : true,
+				//ClickEvent : true
 				DragEvent : true,
-				ShowSqNames:true
-				//ClickEvent : false
+				ShowPossibleMoves : true,
+				ShowSqNames:true,
 
+				//WhoIsNext:"White",
+				Playing:"Both" // Black,White,Both,None
 			});
 		}
 	</script>
@@ -34,6 +36,7 @@
 </head>
 <body onload="init();">
 	
-		<div id="mychess-board"></div>
+		<div id="mychess-board" ></div>
+		<p style="position:absolute;right:10px;top:10px;color:red;">Bu çalışmanın kaynak kodu için : <a href="https://github.com/arikanmstf/mychess">Github</a> adresini ziyaret edebilirsiniz.</p>
 </body>
 </html>
