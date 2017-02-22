@@ -6,6 +6,7 @@ function MyChess (elemid,opts) {
 	MyChess.Piece = function(opts) {
 		this.Color = opts && opts.Color ? opts.Color : ""; // String | White,Black
 		this.Square = opts && opts.Square ? opts.Square : ""; //Object MyChessSquare
+		this.Index = opts && (opts.Index || opts.Index == "0" )? opts.Index : undefined; //Int
 		this.Type =  ""; // String | Pawn , Rook , Knight , Bishop, Queen , King
 		this.Symbol = opts && opts.Symbol ? opts.Symbol : ""; // String | N,B,K,R,Q
 		this.Element = {innerHTML:""} ; //HTMLDOMObject
@@ -27,31 +28,14 @@ function MyChess (elemid,opts) {
 				e.style.marginLeft = parseInt((_self.DOM.BoardSize/8-_self.DOM.BoardSize/10)/2)+"px";
 				e.style.marginTop = parseInt((_self.DOM.BoardSize/8-_self.DOM.BoardSize/10)/2)+"px";
 				this.Element = e;
+				var pcs = this.Square.Element.getElementsByClassName('board-pcs');
+				for (var i = 0; i < pcs.length; i++) {
+					pcs[i].parentNode.removeChild(pcs[i]);
+				};
 				if(this.Square)this.Square.Element.appendChild(e);
 			}
 		}
-		this.clone = function(){
-			var opts = {
-				Color : this.Color,
-				Square:this.Square,
-				Symbol:this.Symbol
-			}
 
-			var r ;
-			switch(this.Type){
-				case "Pawn" : r = new MyChess.Piece.Pawn(opts);break;
-				case "Rook" : r = new MyChess.Piece.Rook(opts);break;
-				case "Knight" : r = new MyChess.Piece.Knight(opts);break;
-				case "Bishop" : r = new MyChess.Piece.Bishop(opts);break;
-				case "Queen" : r = new MyChess.Piece.Queen(opts);break;
-				case "King" : r = new MyChess.Piece.King(opts);break;
-				default : r = new MyChess.Piece(opts);break;
-			}
-			r.Element = this.Element;
-			r.NeverMoved = this.NeverMoved;
-			r.Alive = this.Alive;
-			return r;
-		}
 		this.isInDanger = function(){
 			var col = this.Square.ColNum ,
 				row = this.Square.RowName, 
@@ -800,8 +784,6 @@ function MyChess (elemid,opts) {
 			for (var i = 8; i < 16; i++) {
 				this.addPiece(i,"Pawn","Black");
 			};
-			this.addPiece("b2","Pawn","Black");
-			this.addPiece("b7","Pawn","White");
 			this.addPiece(56,"Rook","White");
 			this.addPiece(63,"Rook","White");
 			this.addPiece(57,"Knight","White");
@@ -821,9 +803,11 @@ function MyChess (elemid,opts) {
 			if(Number.isInteger(SQ)) SQ = getSQ(SQ);
 			if (SQ.length != 2) {return false;}
 
-			var opts = {
+			var index = this.Players[Color].Pieces.length,
+			opts = {
 				Color:Color,
-				Square:this.Squares[SQ[0]][SQ[1]]
+				Square:this.Squares[SQ[0]][SQ[1]],
+				Index : index
 			}
 			switch(Type){
 				case "Pawn" : this.Squares[SQ[0]][SQ[1]].Piece = new MyChess.Piece.Pawn(opts);break;
@@ -935,7 +919,7 @@ function MyChess (elemid,opts) {
 						this.Squares[m.To.ColNum][m.To.RowName+1].Piece = new MyChess.Piece({Type:"",Color:"",Square:m.To.SquareID-8});
 					break;
 				case 'WhitePromote' :
-						_self.tempPawn = m.From.Piece.clone();
+						_self.tempPawn = m.From.Piece;
 						console.log(_self.tempPawn)
 						this.ShowPawnPromote("White");
 					break;
@@ -1081,11 +1065,33 @@ function MyChess (elemid,opts) {
 		}
 		MyChess.DOM.ClickPawnPromote = function(element){
 			var Element = element,
-			_s = this,pawn = _self.tempPawn;
+			_s = this;
 			Element.addEventListener("click",OnClick,false);
 
 			function OnClick(e){
-				console.log(pawn);
+				var pawn = _self.tempPawn, piece,
+				opts = {
+					Color:pawn.Color,
+					Square:pawn.Square,
+					Index : pawn.Index
+				},
+				Type = (e.target.getAttribute("pctype"));
+
+				switch(Type){
+					case "Rook" : piece = new MyChess.Piece.Rook(opts);break;
+					case "Knight" : piece = new MyChess.Piece.Knight(opts);break;
+					case "Bishop" : piece = new MyChess.Piece.Bishop(opts);break;
+					case "Queen" :  piece = new MyChess.Piece.Queen(opts);break;
+					default : return;
+				}
+
+				piece.NeverMoved = false; // Boolean
+				piece.Alive = true;
+				_self.GamePlay.Squares[pawn.Square.ColNum][pawn.Square.RowName].Piece = 
+				_self.GamePlay.Players[pawn.Color].Pieces[pawn.Index]  = piece;
+				_self.tempPawn = null;
+				console.log(piece)
+				_self.DOM.Element.ModalPromote.style.display = "none";
 			}
 		}
 
