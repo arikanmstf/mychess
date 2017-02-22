@@ -200,7 +200,7 @@ function MyChess (elemid,opts) {
 						}
 					}
 				}
-			}else{
+			}else if(this.Color == "Black"){
 				if(row==4){
 					if(lastMove && lastMove.To.Piece.Color == "White" && lastMove.To.Piece.Type == "Pawn"){
 						if(lastMove.To.RowName == row && lastMove.From.RowName == 2 && (lastMove.To.ColNum == col-1 || lastMove.To.ColNum == col+1 ) ){
@@ -679,7 +679,6 @@ function MyChess (elemid,opts) {
 		}
 		this.CastleMoves = function(){
 			var res = [];
-
 			if(this.NeverMoved){
 				if(this.Color == "White"){
 					
@@ -912,9 +911,9 @@ function MyChess (elemid,opts) {
 				case 'WhiteEnPassant' :
 						this.Squares[m.To.ColNum][m.To.RowName-1].Element.removeChild (this.Squares[m.To.ColNum][m.To.RowName-1].Piece.Element);
 						this.Squares[m.To.ColNum][m.To.RowName-1].Piece.Alive = false;
-						this.Squares[m.To.ColNum][m.To.RowName-1].Piece = new MyChess.Pieceeak;
+						this.Squares[m.To.ColNum][m.To.RowName-1].Piece = new MyChess.Piece;
 				case 'BlackEnPassant' :
-						this.Squares[m.To.ColNum][m.To.RowName+1].Element.removeChild (this.Squares[m.To.ColNum][m.To.RowName+1].Piece.Element);
+						//this.Squares[m.To.ColNum][m.To.RowName+1].Element.removeChild (this.Squares[m.To.ColNum][m.To.RowName+1].Piece.Element);
 						this.Squares[m.To.ColNum][m.To.RowName+1].Piece.Alive = false;
 						this.Squares[m.To.ColNum][m.To.RowName+1].Piece = new MyChess.Piece({Type:"",Color:"",Square:m.To.SquareID-8});
 					break;
