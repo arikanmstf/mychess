@@ -51,7 +51,7 @@ function MyChess (elemid,opts) {
 
 			for (var i = 0; i < Pieces.length; i++) {
 				if(!Pieces[i].Alive)continue;
-				var m = Pieces[i].PossibleMoves();
+				var m = Pieces[i].PossibleMoves(true);
 				for (var j = 0; j < m.length; j++) {
 					if(m[j].To.ColNum  == col && m[j].To.RowName == row){
 						return true;
@@ -617,7 +617,8 @@ function MyChess (elemid,opts) {
 	MyChess.Piece.King = function(opts){
 		MyChess.Piece.apply(this,arguments); // extends MyChess.Piece
 		this.Type = "King";
-		this.PossibleMoves = function(){
+		this.PossibleMoves = function(skipCastleMoves){
+			if(typeof skipCastleMoves == 'undefined')skipCastleMoves = false;
 			var col = this.Square.ColNum ,
 				row = this.Square.RowName, 
 				SquareID = this.Square.SquareID,
@@ -674,11 +675,13 @@ function MyChess (elemid,opts) {
 						To : _self.GamePlay.Squares[col][row-1]
 					}));
 			}
-			var cast = this.CastleMoves();
+			var cast = [];
+			if(! skipCastleMoves ) cast = this.CastleMoves();
 			return  res.concat(cast);
 		}
 		this.CastleMoves = function(){
 			var res = [];
+			if(this.isInDanger())return res;
 			if(this.NeverMoved){
 				if(this.Color == "White"){
 					
@@ -839,6 +842,9 @@ function MyChess (elemid,opts) {
 			m = this.Squares[old[0]][old[1]].Piece.isLegalMove(_new);
 			if(m){
 				this.moveConfirmed(m);
+				if(this.isCheckMate(m)){
+					alert("checkmate ! ");
+				};
 			}else{
 				this.moveDenied(old);
 			}
@@ -945,6 +951,20 @@ function MyChess (elemid,opts) {
 			m.To.Piece = m.From.Piece;
 			m.From.Piece = new MyChess.Piece({Type:"",Color:"",Square:m.From});
 			//console.log(this.Moves);
+		}
+		this.isCheckMate = function  (m) {
+			var next = (this.WhoIsNext);
+			for (var i = 0; i < this.Players[next].Pieces.length; i++) {
+				var piece = this.Players[next].Pieces[i];
+				if(!piece.Alive) continue;
+				var p = piece.PossibleMoves();
+				p = piece.KingSafeFilter(p);
+				if(p.length > 0){
+					return false;
+				}
+				else continue;
+			};
+			return true;
 		}
 		this.moveDenied = function(n){
 			_self.GamePlay.Squares[n[0]][n[1]].Piece.Element.style.left =0+"px";
