@@ -775,12 +775,12 @@ function MyChess (elemid,opts) {
 
 		/* public functions*/
 		this.StartGame = function(){
-			this.addPiece("a8","Rook","Black");
+			/*this.addPiece("a8","Rook","Black");
 			this.addPiece("b8","Knight","Black");
 			this.addPiece("c8","Bishop","Black");
 			this.addPiece("d8","Queen","Black");
 			this.addPiece("e8","King","Black");
-			this.addPiece("f8","Bishop","Black");
+			/*this.addPiece("f8","Bishop","Black");
 			this.addPiece("g8","Knight","Black");
 			this.addPiece("h8","Rook","Black");
 			for (var i = 8; i < 16; i++) {
@@ -796,7 +796,11 @@ function MyChess (elemid,opts) {
 			this.addPiece(60,"King","White");
 			for (var i = 48; i < 56; i++) {
 				this.addPiece(i,"Pawn","White");
-			};
+			};*/
+			this.addPiece("a7","Pawn","White");
+			this.addPiece("b6","King","White");
+			this.addPiece("e5","Rook","White");
+			this.addPiece("a8","King","Black");
 		}
 		this.loadFEMString = function(){
 
@@ -843,7 +847,11 @@ function MyChess (elemid,opts) {
 			if(m){
 				this.moveConfirmed(m);
 				if(this.isCheckMate(m)){
-					alert("checkmate ! ");
+					if(this.isStealMate()){
+						alert("stealmate ! ");
+					}else {
+						alert("checkmate ! ");
+					}
 				};
 			}else{
 				this.moveDenied(old);
@@ -965,6 +973,16 @@ function MyChess (elemid,opts) {
 				else continue;
 			};
 			return true;
+			
+			
+		}
+		this.isStealMate = function(){
+			var next = (this.WhoIsNext);
+			if(this.Players[next].King.isInDanger()){
+				return false;
+			}else{
+				return true;
+			}
 		}
 		this.moveDenied = function(n){
 			_self.GamePlay.Squares[n[0]][n[1]].Piece.Element.style.left =0+"px";
