@@ -20,4 +20,4 @@ Javascript
 });
 
 ```
-Demo Available at: http://mustafaarikan.net/mychess/board.html
+Demo Available at: http://mustafaarikan.net/mychess
